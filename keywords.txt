@@ -1,0 +1,30 @@
+#######################################
+# Syntax Colouring Map For Dimmer
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Dimmer	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+attachZeroCross	KEYWORD2
+attachTriac	KEYWORD2
+zeroCross	KEYWORD2
+triac	KEYWORD2
+init	KEYWORD2
+initRamp	KEYWORD2
+on	KEYWORD2
+toggle	KEYWORD2
+off	KEYWORD2
+set	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+
