@@ -11,7 +11,9 @@ The reference circuit from both shields can be found at:
 
 This library can be addapted to use any zero cross dector shield and triac shield.
 
-To install, just copy it under <arduinosketchfolder>/libraries/
+To install, copy the lybrary under <arduinoSketchFolder>/libraries/
+
+This library needs TimerOne library which can be found here: https://github.com/PaulStoffregen/TimerOne
 
 ---
 
