@@ -17,7 +17,7 @@ To install, just copy it under <arduinosketchfolder>/libraries/
 
 The following example is provided:
 
-- **Lamps**:Control 3 dimmerable lamps with random values (Extended to 10 lamps).
+- **Lamps**: Control 3 dimmerable lamps with random values (Extended to 10 lamps).
 
 
 ---
@@ -26,13 +26,13 @@ Usage:
 
 Use the library functions `attachZeroCross()` and `attachTriac()` to assign each triac and the zero cross shield to the program.
 
-Choose the operation mode with `ini()` or `initRamp()` to make a smooth transition between power setups.
+To start controlling the lamps initialize with `ini()` or `initRamp()` to make smooths transitions between power setups. In both cases the set lamps will start with 50% of the AC power.
 
 The triacs can be controlled using the functions: `set(lamp, power)`, `on()`, `on(lamp)`, `off()`, `off(lamp)` and `toogle(lamp)`.
 
 
 ---
 
-Copyright (c) 2015 Circuitar
+Copyright (c) Circuitar Eletrônicos - 2015
 
 This software is released under an MIT license. See the attached LICENSE file for details.
