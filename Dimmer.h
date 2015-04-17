@@ -5,8 +5,8 @@
  This software is released under the MIT license. See the attached LICENSE file for details.
  */
 
-#ifndef dimmer.h
-#define dimmer.h
+#ifndef DIMMER_H
+#define DIMMER_H
 
 #include "Arduino.h"
 #include <TimerOne.h>
