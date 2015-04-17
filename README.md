@@ -1,17 +1,15 @@
-Dimmer_Library
-=======================
+Dimmer Library for Arduino
+==========================
 
-This is the Arduino software library to access the Circuitar Triac_Nanoshield alongside with Circuitar Zerocross_Nanoshield.
+This is the Arduino software library to control AC loads using triacs and a zero cross detector circuit. The library functions can be used to control the AC load power of each Triac independently, using a single zero cross circuit.
 
-The library is used to control the AC load power of each Triac.
+The reference circuit is based on the Triac and Zero Cross Nanoshields from Circuitar, and can be found at:
+    Triac: https://www.circuitar.com.br/en/nanoshields/modules/triac/ 
+    Zero Cross: https://www.circuitar.com.br/en/nanoshields/modules/zero-cross/
 
-The reference circuit from both shields can be found at: 
-    https://www.circuitar.com.br/en/nanoshields/modules/triac/ 
-    https://www.circuitar.com.br/en/nanoshields/modules/zero-cross/
+There are different ways to implement zero cross detector circuits. This library is based on the implementation above, but it can be easily adapted to use any type of zero cross detector circuit.
 
-This library can be addapted to use any zero cross dector shield and triac shield.
-
-To install, copy the lybrary under <arduinoSketchFolder>/libraries/
+To install, copy the library under <arduinoSketchFolder>/libraries/
 
 This library needs TimerOne library which can be found here: https://github.com/PaulStoffregen/TimerOne
 
@@ -19,8 +17,7 @@ This library needs TimerOne library which can be found here: https://github.com/
 
 The following example is provided:
 
-- **Lamps**: Control 3 dimmerable lamps with random values (Extended to 10 lamps).
-
+- **Lamps**: Control 3 dimmable lamps with random values (can be extended to 10 lamps).
 
 ---
 
@@ -28,10 +25,9 @@ Usage:
 
 Use the library functions `attachZeroCross()` and `attachTriac()` to assign each triac and the zero cross shield to the program.
 
-To start controlling the lamps initialize with `ini()` or `initRamp()` to make smooths transitions between power setups. In both cases the set lamps will start with 50% of the AC power.
+To start controlling the lamps, initialize with `init()` or `initRamp()` to make smooth transitions between power levels. In both cases the lamps will start with 50% of the AC power.
 
 The triacs can be controlled using the functions: `set(lamp, power)`, `on()`, `on(lamp)`, `off()`, `off(lamp)` and `toogle(lamp)`.
-
 
 ---
 
