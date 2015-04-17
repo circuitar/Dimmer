@@ -1,5 +1,5 @@
 /**
- * Control 3 dimmerable lamps. This program transitions 3 in playfull ways.
+ * Control 3 dimmable lamps. This program transitions 3 in playful ways.
  *
  * Copyright (c) 2015 Circuitar
  * All rights reserved.
@@ -11,7 +11,7 @@
  */
 
 #include <TimerOne.h>
-#include "dimmer.h"
+#include "Dimmer.h"
 
 Dimmer dimmer1;
 

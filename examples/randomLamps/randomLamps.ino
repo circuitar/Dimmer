@@ -1,5 +1,5 @@
 /**
- * Control 3 dimmerable lamps
+ * Control 3 dimmable lamps
  *
  * Copyright (c) 2015 Circuitar
  * All rights reserved.
@@ -11,8 +11,7 @@
  */
 
 #include <TimerOne.h>
-//#define dimmerObject  dimmer1
-#include "dimmer.h"
+#include "Dimmer.h"
 
 Dimmer dimmer1;
 

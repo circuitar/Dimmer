@@ -1,5 +1,5 @@
 /**
- * Control 3 dimmerable lamps in a wave form
+ * Control 3 dimmable lamps in a wave form
  *
  * Copyright (c) 2015 Circuitar
  * All rights reserved.
@@ -11,7 +11,7 @@
  */
 
 #include <TimerOne.h>
-#include "dimmer.h"
+#include "Dimmer.h"
 
 Dimmer dimmer1;
 
