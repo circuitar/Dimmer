@@ -16,9 +16,11 @@ This library needs TimerOne library which can be found here: https://github.com/
 
 ---
 
-The following example is provided:
+The following examples are provided:
 
-- **Lamps**: Control 3 dimmable lamps with random values (can be extended to 10 lamps).
+- **displayLamps**: This program transitions 3 lamps in playfull ways to show how they can be controlled. (can be extended to 10 lamps).
+- **randomLamps**: Control 3 dimmable lamps with random values (can be extended to 10 lamps).
+- **waveLamps**: Control 3 dimmable lamps in a wave form (can be extended to 10 lamps).
 
 ---
 
@@ -35,3 +37,4 @@ The triacs can be controlled using the functions: `set(lamp, power)`, `on()`, `o
 Copyright (c) Circuitar Eletrônicos - 2015
 
 This software is released under an MIT license. See the attached LICENSE file for details.
+
