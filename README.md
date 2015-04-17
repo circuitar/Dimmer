@@ -18,9 +18,9 @@ This library needs TimerOne library which can be found here: https://github.com/
 
 The following examples are provided:
 
-- **displayLamps**: This program transitions 3 lamps in playfull ways to show how they can be controlled. (can be extended to 10 lamps).
-- **randomLamps**: Control 3 dimmable lamps with random values (can be extended to 10 lamps).
-- **waveLamps**: Control 3 dimmable lamps in a wave form (can be extended to 10 lamps).
+- **DisplayLamps**: This program transitions 3 lamps in playfull ways to show how they can be controlled. (can be extended to 10 lamps).
+- **RandomLamps**: Control 3 dimmable lamps with random values (can be extended to 10 lamps).
+- **WaveLamps**: Control 3 dimmable lamps in a wave form (can be extended to 10 lamps).
 
 ---
 
