@@ -14,7 +14,7 @@
 #define MAX_TRIAC 10
 
 #ifndef dimmerObject
-#define dimmerObject    dimmer1
+#define dimmerObject    dimmer
 #endif
 
 class Dimmer{
@@ -25,6 +25,7 @@ public:
     void attachTriac(byte pin);
     int init();
     int initRamp();
+    int initCount();
     void off();
     void off(byte lamp);
     void on();
@@ -36,7 +37,8 @@ public:
 
 //private:
     int start();
-    boolean ramp_mode;
+    bool ramp_mode;
+    bool countMode;
     boolean zeroCrosAttached;
     boolean triacAttached;
     
@@ -57,6 +59,9 @@ public:
     
     //50ms Counter
     unsigned int msCounter;
+    
+    // Half cycle counter
+    byte halfCycleCounter;
 };
 
 extern Dimmer dimmerObject;

@@ -54,11 +54,19 @@ void Dimmer::attachTriac(byte pin){
 
 int Dimmer::init(){
     ramp_mode=false;
+    countMode=false;
     return Dimmer::start();
 }
 
 int Dimmer::initRamp(){
     ramp_mode=true;
+    countMode=false;
+    return Dimmer::start();
+}
+
+int Dimmer::initCount(){
+    ramp_mode=false;
+    countMode=true;
     return Dimmer::start();
 }
 
@@ -102,11 +110,15 @@ int Dimmer::start(){
         return 0;
     }
     
-    // Initialize Timer1
-    Timer1.initialize();
-    // Attach timer 1 to triac function
-    //Called every 50 micro-seconds
-    Timer1.attachInterrupt(callTriac, 50);
+    if (!countMode) {
+        // Initialize Timer1
+        Timer1.initialize();
+        // Attach timer 1 to triac function
+        //Called every 50 micro-seconds
+        Timer1.attachInterrupt(callTriac, 50);
+    }
+    
+    halfCycleCounter = 0;
     
     for(byte i=0; i < triacs; i++){
         pinMode(triacPins[i], OUTPUT);
@@ -119,30 +131,46 @@ int Dimmer::start(){
 }
 
 void Dimmer::zeroCross(){
-    //Clear counter
-    msCounter=0;
-    //Turn-off triacs
-    for (byte i=0; i<triacs; i++){
-        digitalWrite(triacPins[i], LOW);
+    if (countMode) {
+        for(byte i=0; i<triacs; i++){
+            if (halfCycleCounter < lampValue_ramp[i] && lampSwitch[i]) {
+                digitalWrite(triacPins[i], HIGH);
+            } else {
+                digitalWrite(triacPins[i], LOW);
+            }
+        }
+
+        if (++halfCycleCounter >= 100) {
+            halfCycleCounter = 0;
+        }
+    } else {
+        //Clear counter
+        msCounter=0;
+        //Turn-off triacs
+        for (byte i=0; i<triacs; i++){
+            digitalWrite(triacPins[i], LOW);
+        }
     }
 }
 
 void Dimmer::triac(){
-    msCounter++;
-    //With ramp mode
-    if (ramp_mode && msCounter % 150 == 0 ) {
-            for(byte a=0; a<triacs; a++){
-                if(lampValue_ramp[a] > lampValue[a])
-                    lampValue_ramp[a]--;
-                else if(lampValue_ramp[a] < lampValue[a])
-                    lampValue_ramp[a]++;
-            }
-    }
+    if (!countMode) {
+        msCounter++;
+        //With ramp mode
+        if (ramp_mode && msCounter % 150 == 0 ) {
+                for(byte a=0; a<triacs; a++){
+                    if(lampValue_ramp[a] > lampValue[a])
+                        lampValue_ramp[a]--;
+                    else if(lampValue_ramp[a] < lampValue[a])
+                        lampValue_ramp[a]++;
+                }
+        }
     
-    for(byte i=0; i<triacs; i++){
-        if(lampValue_ramp[i] > 0 && lampSwitch[i]){
-            if(triac_time[ lampValue_ramp[i] ] == msCounter){
-                digitalWrite(triacPins[i], HIGH);
+        for(byte i=0; i<triacs; i++){
+            if(lampValue_ramp[i] > 0 && lampSwitch[i]){
+                if(triac_time[ lampValue_ramp[i] ] == msCounter){
+                    digitalWrite(triacPins[i], HIGH);
+                }
             }
         }
     }
