@@ -64,9 +64,10 @@ int Dimmer::initRamp(){
     return Dimmer::start();
 }
 
-int Dimmer::initCount(){
+int Dimmer::initCount(byte resolution){
     ramp_mode=false;
     countMode=true;
+    countResolution = resolution;
     return Dimmer::start();
 }
 
@@ -133,14 +134,14 @@ int Dimmer::start(){
 void Dimmer::zeroCross(){
     if (countMode) {
         for(byte i=0; i<triacs; i++){
-            if (halfCycleCounter < lampValue_ramp[i] && lampSwitch[i]) {
+            if (halfCycleCounter < lampValue_ramp[i] / countResolution && lampSwitch[i]) {
                 digitalWrite(triacPins[i], HIGH);
             } else {
                 digitalWrite(triacPins[i], LOW);
             }
         }
 
-        if (++halfCycleCounter >= 100) {
+        if (++halfCycleCounter >= 100 / countResolution) {
             halfCycleCounter = 0;
         }
     } else {

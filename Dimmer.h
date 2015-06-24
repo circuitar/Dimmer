@@ -25,7 +25,7 @@ public:
     void attachTriac(byte pin);
     int init();
     int initRamp();
-    int initCount();
+    int initCount(byte resolution = 1);
     void off();
     void off(byte lamp);
     void on();
@@ -39,6 +39,7 @@ public:
     int start();
     bool ramp_mode;
     bool countMode;
+    byte countResolution;
     boolean zeroCrosAttached;
     boolean triacAttached;
     
