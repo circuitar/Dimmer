@@ -1,5 +1,5 @@
 /*
- This is the Dimmer library to control the AC load power and also dimmerable lamps
+ This is the Dimmer library to control AC loads, including dimmable lamps.
  
  Copyright (c) 2015 Circuitar
  This software is released under the MIT license. See the attached LICENSE file for details.
