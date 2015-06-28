@@ -1,5 +1,5 @@
 /*
- This is the Dimmer library to control the AC load power and also dimmerable lamps
+ This is the Dimmer library to control AC loads, including dimmable lamps.
  
  Copyright (c) 2015 Circuitar
  This software is released under the MIT license. See the attached LICENSE file for details.
@@ -14,7 +14,7 @@
 #define MAX_TRIAC 10
 
 #ifndef dimmerObject
-#define dimmerObject    dimmer1
+#define dimmerObject dimmer
 #endif
 
 class Dimmer{
@@ -25,6 +25,7 @@ public:
     void attachTriac(byte pin);
     int init();
     int initRamp();
+    int initCount(byte resolution = 1);
     void off();
     void off(byte lamp);
     void on();
@@ -34,9 +35,11 @@ public:
     void zeroCross();
     void triac();
 
-//private:
+private:
     int start();
-    boolean ramp_mode;
+    bool ramp_mode;
+    bool countMode;
+    byte countResolution;
     boolean zeroCrosAttached;
     boolean triacAttached;
     
@@ -57,6 +60,9 @@ public:
     
     //50ms Counter
     unsigned int msCounter;
+    
+    // Half cycle counter
+    byte halfCycleCounter;
 };
 
 extern Dimmer dimmerObject;
