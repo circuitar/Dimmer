@@ -12,17 +12,14 @@
 #include <TimerOne.h>
 
 #define MAX_TRIAC 10
-
-#ifndef dimmerObject
-#define dimmerObject    dimmer
-#endif
-
-class Dimmer{
+    
+class DimmerControl{
     
 public:
-    Dimmer();
-    void attachZeroCross(int zc_pin, int inter);
+    DimmerControl();
+    void attachZeroCross(byte pin, byte inter);
     void attachTriac(byte pin);
+    void detachTriacs();
     int init();
     int initRamp();
     int initCount(byte resolution = 1);
@@ -31,6 +28,8 @@ public:
     void on();
     void on(byte lamp);
     void toggle(byte lamp);
+    boolean getState(byte lamp);
+    byte getValue(byte lamp);
     void set(byte lamp, byte value);
     void zeroCross();
     void triac();
@@ -42,6 +41,12 @@ public:
     byte countResolution;
     boolean zeroCrosAttached;
     boolean triacAttached;
+    
+    //Zero cross pin
+    byte zeroCrossPin;
+    
+    //Zero cross interrupt
+    byte zeroCrossInt;
     
     //Triac pin vector
     byte triacPins[MAX_TRIAC];
@@ -65,7 +70,7 @@ public:
     byte halfCycleCounter;
 };
 
-extern Dimmer dimmerObject;
+extern DimmerControl Dimmer;
 
 void callZeroCross();
 void callTriac();

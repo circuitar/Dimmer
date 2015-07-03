@@ -40,16 +40,21 @@ Dimmer::Dimmer(){
     triacs=0;
 }
 
-void Dimmer::attachZeroCross(int zc_pin, int inter){
+void Dimmer::attachZeroCross(byte pin, byte inter){
     zeroCrosAttached=true;
-    pinMode(zc_pin, INPUT);
-    attachInterrupt(inter, callZeroCross, RISING);
+    zeroCrossPin=pin;
+    zeroCrossInt=inter;
 }
 
 void Dimmer::attachTriac(byte pin){
     triacAttached=true;
     triacPins[triacs]= pin;
     triacs++;
+}
+
+void Dimmer::detachTriacs(){
+    triacAttached=false;
+    triacs=0;
 }
 
 int Dimmer::init(){
@@ -69,6 +74,41 @@ int Dimmer::initCount(byte resolution){
     countMode=true;
     countResolution = resolution;
     return Dimmer::start();
+}
+
+int Dimmer::start(){
+    if (!zeroCrosAttached || !triacAttached) {
+        return 0;
+    }
+    
+    //Set Zero cross
+    pinMode(zeroCrossPin, INPUT);
+    attachInterrupt(zeroCrossInt, callZeroCross, RISING);
+    
+    if (!countMode) {
+        // Initialize Timer1
+        Timer1.initialize();
+        // Attach timer 1 to triac function
+        //Called every 50 micro-seconds
+        Timer1.attachInterrupt(callTriac, 50);
+    }
+    
+    halfCycleCounter = 0;
+    
+    for(byte i=0; i < triacs; i++){
+        pinMode(triacPins[i], OUTPUT);
+        lampSwitch[i]=true;
+        lampValue[i]= 50;
+        lampValue_ramp[i]= 50;
+    }
+    
+    return 1;
+}
+
+void Dimmer::stop(){
+    Timer1.stop();
+    Timer1.detachInterrupt();
+    detachInterrupt(zeroCrossInt);
 }
 
 void Dimmer::off(){
@@ -96,6 +136,20 @@ void Dimmer::toggle(byte lamp){
     lampSwitch[lamp]=!lampSwitch[lamp];
 }
 
+boolean Dimmer::getState(byte lamp){
+    return lampSwitch[--lamp];
+}
+
+byte Dimmer::getValue(byte lamp){
+    lamp--;
+    if (ramp_mode){
+        return lampValue[lamp];
+    }
+    else{
+        return lampValue_ramp[lamp];
+    }
+}
+
 void Dimmer::set(byte lamp, byte value){
     lamp--;
     if (ramp_mode){
@@ -104,31 +158,6 @@ void Dimmer::set(byte lamp, byte value){
     else{
         lampValue_ramp[lamp]=value;
     }
-}
-
-int Dimmer::start(){
-    if (!zeroCrosAttached || !triacAttached) {
-        return 0;
-    }
-    
-    if (!countMode) {
-        // Initialize Timer1
-        Timer1.initialize();
-        // Attach timer 1 to triac function
-        //Called every 50 micro-seconds
-        Timer1.attachInterrupt(callTriac, 50);
-    }
-    
-    halfCycleCounter = 0;
-    
-    for(byte i=0; i < triacs; i++){
-        pinMode(triacPins[i], OUTPUT);
-        lampSwitch[i]=true;
-        lampValue[i]= 50;
-        lampValue_ramp[i]= 50;
-    }
-    
-    return 1;
 }
 
 void Dimmer::zeroCross(){
