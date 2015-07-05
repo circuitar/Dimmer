@@ -9,8 +9,8 @@
 #include <TimerOne.h>
 #include "Dimmer.h"
 
-//Time table to set triac
-const short triac_time[] ={
+//Time table to set triacs
+const byte triac_time[] ={
     160, 146, 142, 138, 134, 132, 130, 128, 126, 124,
     122, 121, 120, 118, 117, 116, 114, 113, 112, 111,
     110, 109, 108, 107, 106, 105, 104, 103, 102, 101,
@@ -23,151 +23,86 @@ const short triac_time[] ={
     36,  34,  32,  30,  28,  26,  24,  22,  18,  12, 6
 };
 
+static DimmerControl* Dimmers[MAX_TRIAC]; // Pointers to all registered dimmer objects
+static uint8_t DimmerCount = 0;          // Number of registered dimmer objects
+static bool zeroCrosAttached = FALSE;
+
 //ZeroCross Interrupt
 void callZeroCross(){
-    dimmerObject.zeroCross();
-}
-
-//Timer interrupt
-void callTriac(){
-    dimmerObject.triac();
+    for (uint8_t i = 0; i < DimmerCount; i++) {
+        Dimmers[i]->zeroCross();
+    }
 }
 
 //Class Constructor
-Dimmer::Dimmer(){
+DimmerControl::DimmerControl(uint8_t triacPin, uint8_t value, bool state, uint8_t resolution){
+    this->triacPin = triacPin;
+    this->lampValue = value;
+    this->lampState = state;
+    this->countResolution = resolution;
     zeroCrosAttached=false;
     triacAttached=false;
     triacs=0;
+
+    //Register dimmer object
+    Dimmers[DimmerCount++] = this;
 }
 
-void Dimmer::attachZeroCross(byte pin, byte inter){
-    zeroCrosAttached=true;
-    zeroCrossPin=pin;
-    zeroCrossInt=inter;
-}
-
-void Dimmer::attachTriac(byte pin){
-    triacAttached=true;
-    triacPins[triacs]= pin;
-    triacs++;
-}
-
-void Dimmer::detachTriacs(){
-    triacAttached=false;
-    triacs=0;
-}
-
-int Dimmer::init(){
-    ramp_mode=false;
-    countMode=false;
-    return Dimmer::start();
-}
-
-int Dimmer::initRamp(){
-    ramp_mode=true;
-    countMode=false;
-    return Dimmer::start();
-}
-
-int Dimmer::initCount(byte resolution){
-    ramp_mode=false;
-    countMode=true;
-    countResolution = resolution;
-    return Dimmer::start();
-}
-
-int Dimmer::start(){
-    if (!zeroCrosAttached || !triacAttached) {
-        return 0;
-    }
+//Set Zero cross
     
-    //Set Zero cross
-    pinMode(zeroCrossPin, INPUT);
-    attachInterrupt(zeroCrossInt, callZeroCross, RISING);
-    
-    if (!countMode) {
-        // Initialize Timer1
-        Timer1.initialize();
-        // Attach timer 1 to triac function
-        //Called every 50 micro-seconds
-        Timer1.attachInterrupt(callTriac, 50);
-    }
-    
+
+bool DimmerControl::begin(uint8_t mode){
+    this->operation_mode = mode;
     halfCycleCounter = 0;
-    
-    for(byte i=0; i < triacs; i++){
-        pinMode(triacPins[i], OUTPUT);
-        lampSwitch[i]=true;
-        lampValue[i]= 50;
-        lampValue_ramp[i]= 50;
-    }
-    
-    return 1;
-}
-
-void Dimmer::stop(){
-    Timer1.stop();
-    Timer1.detachInterrupt();
-    detachInterrupt(zeroCrossInt);
-}
-
-void Dimmer::off(){
-    for(byte i=0; i < triacs; i++){
-        lampSwitch[i]=false;
+    pinMode(triacPin, OUTPUT); 
+    if(!zeroCrosAttached){
+        pinMode(zeroCrossPin, INPUT);
+        attachInterrupt(zeroCrossInt, callZeroCross, RISING);
+        zeroCrosAttached = TRUE; 
     }
 }
 
-void Dimmer::off(byte lamp){
-    lampSwitch[--lamp]=false;
+void DimmerControl::off(){
+    lampState=false;
 }
 
-void Dimmer::on(){
-    for(byte i=0; i < triacs; i++){
-        lampSwitch[i]=true;
-    }
+void DimmerControl::on(){
+    lampState=true;
 }
 
-void Dimmer::on(byte lamp){
-    lampSwitch[--lamp]=true;
+void DimmerControl::toggle(){
+    lampState=!lampState;
 }
 
-void Dimmer::toggle(byte lamp){
-    lamp--;
-    lampSwitch[lamp]=!lampSwitch[lamp];
+boolean DimmerControl::getState(){
+    return lampState;
 }
 
-boolean Dimmer::getState(byte lamp){
-    return lampSwitch[--lamp];
-}
-
-byte Dimmer::getValue(byte lamp){
-    lamp--;
+byte DimmerControl::getValue(){
     if (ramp_mode){
-        return lampValue[lamp];
+        return lampValue;
     }
     else{
-        return lampValue_ramp[lamp];
+        return lampValue_ramp;
     }
 }
 
-void Dimmer::set(byte lamp, byte value){
+void DimmerControl::set(uint8_t value){
     lamp--;
     if (ramp_mode){
-        lampValue[lamp]=value;
+        lampValue=value;
     }
     else{
-        lampValue_ramp[lamp]=value;
+        lampValue_ramp=value;
     }
 }
 
-void Dimmer::zeroCross(){
+void DimmerControl::zeroCross(){
     if (countMode) {
-        for(byte i=0; i<triacs; i++){
-            if (halfCycleCounter < lampValue_ramp[i] / countResolution && lampSwitch[i]) {
-                digitalWrite(triacPins[i], HIGH);
-            } else {
-                digitalWrite(triacPins[i], LOW);
-            }
+        if (halfCycleCounter < lampValue_ramp / countResolution && lampState) {
+            digitalWrite(triacPin, HIGH);
+        } else {
+            digitalWrite(triacPin, LOW);
         }
 
         if (++halfCycleCounter >= 100 / countResolution) {
@@ -176,32 +111,33 @@ void Dimmer::zeroCross(){
     } else {
         //Clear counter
         msCounter=0;
-        //Turn-off triacs
-        for (byte i=0; i<triacs; i++){
-            digitalWrite(triacPins[i], LOW);
-        }
+        //Turn-off triac
+        digitalWrite(triacPin, LOW);   
     }
 }
 
-void Dimmer::triac(){
+void DimmerControl::triac(){
     if (!countMode) {
         msCounter++;
         //With ramp mode
         if (ramp_mode && msCounter % 150 == 0 ) {
-                for(byte a=0; a<triacs; a++){
-                    if(lampValue_ramp[a] > lampValue[a])
-                        lampValue_ramp[a]--;
-                    else if(lampValue_ramp[a] < lampValue[a])
-                        lampValue_ramp[a]++;
-                }
+            if(lampValue_ramp > lampValue)
+                lampValue_ramp--;
+            else if(lampValue_ramp < lampValue)
+                lampValue_ramp++;
         }
     
-        for(byte i=0; i<triacs; i++){
-            if(lampValue_ramp[i] > 0 && lampSwitch[i]){
-                if(triac_time[ lampValue_ramp[i] ] == msCounter){
-                    digitalWrite(triacPins[i], HIGH);
-                }
+        if(lampValue_ramp > 0 && lampState){
+            if(triac_time[ lampValue_ramp ] == msCounter){
+                digitalWrite(triacPin, HIGH);
             }
         }
+    }
+}
+
+ISR(TIMER2_OVF_vect) { //change this line
+  // Process ISR for all configured dimmer lights at about 20KHz
+    for (uint8_t i = 0; i < DimmerCount; i++) {
+        Dimmers[i]->callTriac();
     }
 }

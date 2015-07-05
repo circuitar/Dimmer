@@ -11,57 +11,54 @@
 #include "Arduino.h"
 #include <TimerOne.h>
 
+//Define Zero cross pin and interrupt here
+#define zeroCrossPin    2
+#define zeroCrossInt    0
+
 #define MAX_TRIAC 10
+
+ //Possible operation modes
+#define NORMAL_MODE     0
+#define RAMP_MODE       1
+#define COUNT_MODE      2
+
+ //Possible light state
+#define OFF    0
+#define ON     1
+
     
 class DimmerControl{
     
 public:
-    DimmerControl();
-    void attachZeroCross(byte pin, byte inter);
-    void attachTriac(byte pin);
-    void detachTriacs();
-    int init();
-    int initRamp();
-    int initCount(byte resolution = 1);
+    DimmerControl(uint8_t triacPin, uint8_t value=50, bool state = ON, uint8_t resolution = 1);
+    bool begin(uint8_t mode = NORMAL_MODE);
     void off();
-    void off(byte lamp);
     void on();
-    void on(byte lamp);
-    void toggle(byte lamp);
-    boolean getState(byte lamp);
-    byte getValue(byte lamp);
-    void set(byte lamp, byte value);
+    void toggle();
+    bool getState();
+    byte getValue();
+    void set(uint8_t value);
     void zeroCross();
     void triac();
 
 //private:
     int start();
-    bool ramp_mode;
-    bool countMode;
+    uint8_t operation_mode;
+
     byte countResolution;
-    boolean zeroCrosAttached;
-    boolean triacAttached;
-    
-    //Zero cross pin
-    byte zeroCrossPin;
-    
-    //Zero cross interrupt
-    byte zeroCrossInt;
+    bool zeroCrosAttached;
     
     //Triac pin vector
-    byte triacPins[MAX_TRIAC];
-    
-    //Triac pin counter
-    byte triacs;
+    byte triacPin;
     
     //Dimmer lamps value
-    byte lampValue[MAX_TRIAC];
+    byte lampValue;
     
     //Temporary lamps value
-    byte lampValue_ramp[MAX_TRIAC];
+    byte lampValue_ramp;
     
     //Virtual switch
-    byte lampSwitch[MAX_TRIAC];
+    byte lampState;
     
     //50ms Counter
     unsigned int msCounter;
@@ -70,9 +67,6 @@ public:
     byte halfCycleCounter;
 };
 
-extern DimmerControl Dimmer;
-
 void callZeroCross();
-void callTriac();
 
 #endif
