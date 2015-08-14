@@ -46,6 +46,8 @@ DimmerControl::DimmerControl(uint8_t triacPin, uint8_t value, bool state){
 }
 
 bool DimmerControl::begin(uint8_t mode, uint8_t resolution){
+    if (mode == RAMP_MODE && resolution == 1)
+        resolution=200; //starting resolution for ramp mode
 	this->operation_mode = mode;
     this->countResolution = resolution;
     pinMode(triacPin, OUTPUT);
@@ -75,11 +77,11 @@ void DimmerControl::toggle(){
 	lampState=!lampState;
 }
 
-boolean DimmerControl::getState(){
+bool DimmerControl::getState(){
 	return lampState;
 }
 
-byte DimmerControl::getValue(){
+uint8_t DimmerControl::getValue(){
 	if (operation_mode == RAMP_MODE){
 		return lampValue;
 	}
@@ -123,8 +125,10 @@ void DimmerControl::zeroCross(){
 void DimmerControl::triac(){
 	if (operation_mode != COUNT_MODE) {
 		msCounter++;
+        RampCounter++;
 		//With ramp mode
-		if (operation_mode == RAMP_MODE && msCounter % 150 == 0 ) {
+		if (operation_mode == RAMP_MODE && RampCounter % countResolution == 0 ) {
+            RampCounter=0;
 			if(lampValue_ramp > lampValue)
 				lampValue_ramp--;
 			else if(lampValue_ramp < lampValue)

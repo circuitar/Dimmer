@@ -52,10 +52,10 @@ class DimmerControl
      * @param triacPin	pin select matching the jumper on the board. (D3, D5, etc)
      * @param value 	initial intensity in percentage of the dimm light.
      *					Minimum is 0 and maximum is 100. Defaut is 50%.
-     * @param state 	initial state of the light. Possible states: ON or OFF. Default is ON.
+     * @param state 	initial state of the light. Possible states: ON or OFF. Default is OFF.
      * @see   begin()
      */ 
-    DimmerControl(uint8_t triacPin, uint8_t value=50, bool state = ON);
+    DimmerControl(uint8_t triacPin, uint8_t value=50, bool state = OFF);
 
     /**
      * Initializes the module.
@@ -63,13 +63,16 @@ class DimmerControl
      * Initializes ZeroCross and Timer 2 interrupts. Set the light according to initial settings.
      * @param mode 		operation mode to crontrol the light. 
      *					Possible modes:
-     *					NORMAL_MODE: Uses timer apply only a percentage of the AC power to the light.
-     *					RAMP_MODE: Same as in the normal mode, but it applies a ramp effect to the light.
-     *					COUNT_MODE: Counts AC waves and apply full wave in time to time. @see resolution
-	 * @param resolution 	divided prescalar to define how many pulses to count in COUNT_MODE.
-	 *						if resolution is 1 the mode counts 100 pulses, if resolution is 2
-	 *						the mode counts 50 pulses, and so on.
-	 *
+     *					NORMAL_MODE: Uses timer to apply only a percentage of the AC power to the light.
+     *					RAMP_MODE: Same as in normal mode, but it applies a ramp effect to the light.
+     *					COUNT_MODE: Counts AC waves and applies full waves from time to time. @see resolution
+	 * @param resolution 	IN COUNT MODE:
+     *                          divided prescalar to define how many pulses to count.
+	 *                          if resolution is 1 the mode counts 100 pulses, if resolution is 2
+	 *                          the mode counts 50 pulses, and so on.
+     *
+     *                      IN RAMP MODE:
+	 *                          Controlls the speed of the ramp when changing values.
      */
     bool begin(uint8_t mode = NORMAL_MODE, uint8_t resolution = 1);
 
@@ -103,19 +106,15 @@ class DimmerControl
     uint8_t getValue();
 
     /**
-     * Gets the current state of the dimmed light.
-     *
-     * @return current light value.
-     */
-    uint8_t getValue();
-
-    /**
      * Sets the value and the state of the light.
      * @param value 	the value of the dimm light. Values from 0 to 100.
      * @param state 	the state of the light. ON or OFF.
      */
     void set(uint8_t value, uint8_t state = -1);
 
+    void zeroCross();
+    void triac();
+    
   private:
     uint8_t operation_mode;
     uint8_t countResolution;
@@ -124,10 +123,8 @@ class DimmerControl
     uint8_t lampValue;
     uint8_t lampValue_ramp;
     bool lampState;
-    unsigned int msCounter;
-
-    void zeroCross();
-    void triac();
+    unsigned int msCounter=0;
+    unsigned int RampCounter=0;
 };
 
 void callZeroCross();

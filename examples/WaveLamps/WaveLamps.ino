@@ -10,11 +10,13 @@
  *
  */
 
-#include <TimerOne.h>
 #include "Dimmer.h"
 
-Dimmer dimmer1;
-
+//store dimm lights in array
+DimmerControl dimm[] = { DimmerControl(3, 50, ON), 
+                         DimmerControl(5, 50, OFF),
+                         DimmerControl(6, 50, OFF) 
+                       };
 #define p1  20
 #define p2  60
 
@@ -27,17 +29,15 @@ byte pot[6][3] = {  {p2,  0, 0 },
                   };
 
 void setup() {
-  dimmer1.attachZeroCross(2,0);
-  dimmer1.attachTriac(3);
-  dimmer1.attachTriac(5);
-  dimmer1.attachTriac(6);
-  dimmer1.init();
+    dimm[0].begin(RAMP_MODE, 100);
+    dimm[1].begin(RAMP_MODE, 100);
+    dimm[2].begin(RAMP_MODE, 100);
 }
 
 void loop(){
   for(byte i=0; i<6; i++){
     for(byte j=0; j<3; j++){
-      dimmer1.set(j+1, pot[i][j]);
+      dimm[j].set(pot[i][j]);
     }
     delay(200);
   }
