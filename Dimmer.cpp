@@ -1,5 +1,5 @@
 /*
- This is the Dimmer library to control the AC load power and also dimmerable lamps
+ This is the Dimmer library to control AC loads, including dimmable lamps.
  
  Version 2.0 - Multi-instance objects.
 
