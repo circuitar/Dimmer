@@ -11,20 +11,22 @@ Dimmer	KEYWORD1
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
-
-attachZeroCross	KEYWORD2
-attachTriac	KEYWORD2
-zeroCross	KEYWORD2
-triac	KEYWORD2
-init	KEYWORD2
-initRamp	KEYWORD2
+begin	KEYWORD2
+off	KEYWORD2
 on	KEYWORD2
 toggle	KEYWORD2
-off	KEYWORD2
+getState	KEYWORD2
+getValue	KEYWORD2
 set	KEYWORD2
+zeroCross	KEYWORD2
+triac	KEYWORD2
+
 
 #######################################
 # Constants (LITERAL1)
 #######################################
-
-
+NORMAL_MODE	LITERAL1
+RAMP_MODE	LITERAL1
+COUNT_MODE	LITERAL1
+ON	LITERAL1
+OFF	LITERAL1

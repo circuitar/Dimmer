@@ -10,25 +10,30 @@
  *
  */
 
-#include <TimerOne.h>
 #include "Dimmer.h"
 
-Dimmer dimmer;
+Dimmer lamp1(3, NORMAL_MODE, 100, 50, ON);
+Dimmer lamp2(5, RAMP_MODE, 100, 50, OFF);
+Dimmer lamp3(6, RAMP_MODE, 100, 50, OFF);
+
+int value;
 
 void setup() {
-  Serial.begin(9600);
-  dimmer.attachZeroCross(2,0);
-  dimmer.attachTriac(3);
-  dimmer.attachTriac(5);
-  dimmer.attachTriac(6);
-  dimmer.init();
+  lamp1.begin();
+  lamp2.begin();
+  lamp3.begin();
   randomSeed(analogRead(0));
 }
 
 void loop(){
-  char lamp=random(1,4);
-  char value=random(0,256);
-  dimmer.set(lamp, value);
-  delay(1000);
+  value=random(0,256);
+  lamp1.set(value);
+  delay(500);
+  value=random(0,256);
+  lamp2.set(value);
+  delay(500);
+  value=random(0,256);
+  lamp2.set(value);
+  delay(500);
 };
 

@@ -10,69 +10,38 @@
  *
  */
 
-#include <TimerOne.h>
 #include "Dimmer.h"
 
-Dimmer dimmer;
+//Set 3 dimerable lights at pins 3,5 and 6
+Dimmer lamp1(3, RAMP_MODE, 100, 50, ON);
+Dimmer lamp2(5, RAMP_MODE, 100, 50, OFF);
+Dimmer lamp3(6, RAMP_MODE, 100, 50, OFF);
 
-#define p1  10
-#define p2  40
-
-byte pot[6][3] = {  {p2,  0, 0 }, 
-                    {p1, p1, 0 },
-                    {0 , p2, 0 }, 
-                    {0 , p1, p1}, 
-                    {0 ,  0, p2},
-                    {p1,  0, p1}
-                  };
+//Light powers animation
+#define p1  20
+#define p2  80
+byte pot[6][3] = {
+  {p2,  0, 0 },
+  {p1, p1, 0 },
+  {0 , p2, 0 },
+  {0 , p1, p1},
+  {0 ,  0, p2},
+  {p1,  0, p1}
+};
 
 void setup() {
-  dimmer.attachZeroCross(2,0);
-  dimmer.attachTriac(3);
-  dimmer.attachTriac(5);
-  dimmer.attachTriac(6);
-  dimmer.init();
+  //Start dimmers in ramp mode (smooth transitions) with speed 100.
+  lamp1.begin();
+  lamp2.begin();
+  lamp3.begin();
 }
 
-void loop(){
-  wave1(200, 3);
-  dimmer.initRamp();
-  wave2(700, 3);
-  OnOff(500, 3);
-  dimmer.init();
-  OnOff(300, 3);
-  OnOff(100, 3);
-}
-
-void wave1(short delayms, byte times){
-  for(byte k=0; k<times; k++){
-    for(byte i=0; i<6; i++){
-      for(byte j=0; j<3; j++){
-        dimmer.set(j+1, pot[i][j]);
-      }
-      delay(delayms);
-    }
-  }
-}
-
-void wave2(short delayms, byte times){
-  for(byte k=0; k<times; k++){
-    for(byte i=0; i<6; i++){
-      for(byte j=0; j<3; j++){
-        dimmer.set(j+1, pot[i][j]==p2 ? 0 : p2);
-      }
-      delay(delayms);
-    }
-  }
-}
-
-void OnOff(short delayms, byte times){
-  for(byte k=0; k<times; k++){
-    for(byte i=0; i<6; i++){
-      for(byte j=0; j<3; j++){
-        dimmer.set(j+1, pot[i][j]==p2 ? p2 : 0);
-      }
-      delay(delayms);
-    }
+void loop() {
+  //Wave form animation
+  for (byte i = 0; i < 3; i++) {
+    lamp1.set(pot[i][0]);
+    lamp2.set(pot[i][1]);
+    lamp3.set(pot[i][2]);
+    delay(400);
   }
 }
