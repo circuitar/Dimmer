@@ -42,7 +42,7 @@
 /**
  * A ZeroCross Nanoshield or similar module to dimm AC lights.
  */
-class DimmerControl
+class Dimmer
 {    
   public:
     /**
@@ -50,31 +50,31 @@ class DimmerControl
      *
      * Creates an object to access one Triac Nanoshield.
      * @param triacPin  pin select matching the jumper on the board. (D3, D5, etc)
-     * @param value   initial intensity in percentage of the dimm light.
-     *          Minimum is 0 and maximum is 100. Defaut is 50%.
+     * @param mode  operation mode to crontrol the light. 
+     *          Possible modes:
+     *          NORMAL_MODE: Uses timer to apply only a percentage of the AC power to the light.
+     *          RAMP_MODE: Same as in normal mode, but it applies a ramp effect to the light.
+     *          COUNT_MODE: Counts AC waves and applies full waves from time to time. @see resolution
+     * @param resolution  IN COUNT MODE:
+     *                        divided prescalar to define how many pulses to count.
+     *                        if resolution is 1 the mode counts 100 pulses, if resolution is 2
+     *                        the mode counts 50 pulses, and so on.
+     *
+     *                    IN RAMP MODE:
+     *                        Controlls the speed of the ramp when changing values.
+     * @param value   initial intensity in percentage of the dimmed light.
+     *          Minimum is 0 and maximum is 100. Default is 50%.
      * @param state   initial state of the light. Possible states: ON or OFF. Default is OFF.
      * @see   begin()
      */ 
-    DimmerControl(uint8_t triacPin, uint8_t value=50, bool state = OFF);
+    Dimmer(uint8_t triacPin, uint8_t mode = NORMAL_MODE, uint8_t resolution = 1, uint8_t value=50, bool state = OFF);
 
     /**
      * Initializes the module.
      *
      * Initializes ZeroCross and Timer 2 interrupts. Set the light according to initial settings.
-     * @param mode     operation mode to crontrol the light. 
-     *          Possible modes:
-     *          NORMAL_MODE: Uses timer to apply only a percentage of the AC power to the light.
-     *          RAMP_MODE: Same as in normal mode, but it applies a ramp effect to the light.
-     *          COUNT_MODE: Counts AC waves and applies full waves from time to time. @see resolution
-   * @param resolution   IN COUNT MODE:
-     *                          divided prescalar to define how many pulses to count.
-   *                          if resolution is 1 the mode counts 100 pulses, if resolution is 2
-   *                          the mode counts 50 pulses, and so on.
-     *
-     *                      IN RAMP MODE:
-   *                          Controlls the speed of the ramp when changing values.
      */
-    bool begin(uint8_t mode = NORMAL_MODE, uint8_t resolution = 1);
+    bool begin();
 
     /**
      * Turns the light OFF. 
@@ -112,21 +112,21 @@ class DimmerControl
      */
     void set(uint8_t value, uint8_t state = -1);
 
-    void zeroCross();
-    void triac();
-    
+    friend void callTriac();
+    friend void callZeroCross();
+
   private:
-    uint8_t operation_mode;
+    uint8_t operationMode;
     uint8_t countResolution;
     uint8_t halfCycleCounter;
     uint8_t triacPin;
     uint8_t lampValue;
-    uint8_t lampValue_ramp;
+    uint8_t lampValueRamp;
     bool lampState;
     unsigned int msCounter=0;
-    unsigned int RampCounter=0;
+    unsigned int rampCounter=0;
+    void zeroCross();
+    void triac();
 };
-
-void callZeroCross();
 
 #endif

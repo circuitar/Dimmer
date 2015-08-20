@@ -13,14 +13,14 @@
 #include "Dimmer.h"
 
 //Set 3 dimerable lights at pins 3,5 and 6
-DimmerControl lamp1(3, 50, ON);
-DimmerControl lamp2(5, 50, OFF);
-DimmerControl lamp3(6, 50, OFF);
+Dimmer lamp1(3, RAMP_MODE, 100, 50, ON);
+Dimmer lamp2(5, RAMP_MODE, 100, 50, OFF);
+Dimmer lamp3(6, RAMP_MODE, 100, 50, OFF);
 
 //Light powers animation
 #define p1  20
 #define p2  80
-byte pot[3][3] = {
+byte pot[6][3] = {
   {p2,  0, 0 },
   {p1, p1, 0 },
   {0 , p2, 0 },
@@ -31,9 +31,9 @@ byte pot[3][3] = {
 
 void setup() {
   //Start dimmers in ramp mode (smooth transitions) with speed 100.
-  lamp1.begin(RAMP_MODE, 100);
-  lamp2.begin(RAMP_MODE, 100);
-  lamp3.begin(RAMP_MODE, 100);
+  lamp1.begin();
+  lamp2.begin();
+  lamp3.begin();
 }
 
 void loop() {

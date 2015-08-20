@@ -12,16 +12,16 @@
 
 #include "Dimmer.h"
 
-DimmerControl lamp1(3, 50, ON);
-DimmerControl lamp2(5, 50, OFF);
-DimmerControl lamp3(6, 50, OFF);
+Dimmer lamp1(3, NORMAL_MODE, 100, 50, ON);
+Dimmer lamp2(5, RAMP_MODE, 100, 50, OFF);
+Dimmer lamp3(6, RAMP_MODE, 100, 50, OFF);
 
 int value;
 
 void setup() {
-  lamp1.begin(NORMAL_MODE, 100);
-  lamp2.begin(RAMP_MODE, 100);
-  lamp3.begin(RAMP_MODE, 100);
+  lamp1.begin();
+  lamp2.begin();
+  lamp3.begin();
   randomSeed(analogRead(0));
 }
 
