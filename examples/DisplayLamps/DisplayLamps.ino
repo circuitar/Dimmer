@@ -12,12 +12,12 @@
 
 #include "Dimmer.h"
 
-//Set 3 dimerable lights at pins 3,5 and 6
+// Set 3 dimerable lights in ramp mode (smooth transitions) with speed 100 at pins 3,5 and 6
 Dimmer lamp1(3, RAMP_MODE, 100, 50, ON);
 Dimmer lamp2(5, RAMP_MODE, 100, 50, OFF);
 Dimmer lamp3(6, RAMP_MODE, 100, 50, OFF);
 
-//Light powers animation
+// Light powers animation
 #define p1  20
 #define p2  80
 byte pot[6][3] = {
@@ -30,14 +30,14 @@ byte pot[6][3] = {
 };
 
 void setup() {
-  //Start dimmers in ramp mode (smooth transitions) with speed 100.
+  // Start dimmers
   lamp1.begin();
   lamp2.begin();
   lamp3.begin();
 }
 
 void loop() {
-  //Wave form animation
+  // Wave form animation
   for (byte i = 0; i < 3; i++) {
     lamp1.set(pot[i][0]);
     lamp2.set(pot[i][1]);
