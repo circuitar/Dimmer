@@ -57,6 +57,8 @@ Dimmer::Dimmer(uint8_t triacPin, uint8_t mode, uint8_t resolution, uint8_t value
   this->countResolution = resolution;
   this->lampValue = value;
   this->lampState = state;
+  this->msCounter = 0;
+  this->rampCounter = 0;
 
   // Register dimmer object
   dimmmers[dimmerCount++] = this;

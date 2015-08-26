@@ -112,9 +112,6 @@ class Dimmer
      */
     void set(uint8_t value, uint8_t state = -1);
 
-    friend void callTriac();
-    friend void callZeroCross();
-
   private:
     uint8_t operationMode;
     uint8_t countResolution;
@@ -123,10 +120,14 @@ class Dimmer
     uint8_t lampValue;
     uint8_t lampValueRamp;
     bool lampState;
-    unsigned int msCounter=0;
-    unsigned int rampCounter=0;
+    unsigned int msCounter;
+    unsigned int rampCounter;
+
     void zeroCross();
     void triac();
+
+    friend void callTriac();
+    friend void callZeroCross();
 };
 
 #endif
