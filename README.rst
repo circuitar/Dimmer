@@ -22,7 +22,7 @@ The following examples_ are provided:
 .. _Circuitar: https://www.circuitar.com/
 .. _examples: https://github.com/circuitar/Dimmer/tree/master/examples/
 .. _DisplayLamps: https://github.com/circuitar/Dimmer/blob/master/examples/DisplayLamps/DisplayLamps.ino
-.. _RandomLamps: https://github.com/circuitar/Dimmer/blob/master/examples/RandomLamps/RandonLamps.ino
+.. _RandomLamps: https://github.com/circuitar/Dimmer/blob/master/examples/RandomLamps/RandomLamps.ino
 .. _WaveLamps: https://github.com/circuitar/Dimmer/blob/master/examples/WaveLamps/WaveLamps.ino
 
 ----
