@@ -121,10 +121,8 @@ class Dimmer
   private:
     uint8_t operationMode;
     uint8_t countResolution;
-    //uint8_t halfCycleCounter;
     uint32_t pulses = 0;
     uint8_t pulseCount = 0;
-    //
     uint8_t triacPin;
     uint8_t lampValue;
     uint8_t lampValueRamp;
