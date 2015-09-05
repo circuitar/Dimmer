@@ -50,7 +50,7 @@ ISR(TIMER2_COMPA_vect) {
 // Class Constructor
 Dimmer::Dimmer(uint8_t triacPin, uint8_t mode, uint8_t resolution, uint8_t value, bool state){
   if (mode == RAMP_MODE && resolution == 1)
-        resolution = 200; // starting resolution for ramp mode
+    resolution = 200; // starting resolution for ramp mode
 
   this->triacPin = triacPin;
   this->operationMode = mode;
@@ -60,23 +60,27 @@ Dimmer::Dimmer(uint8_t triacPin, uint8_t mode, uint8_t resolution, uint8_t value
   this->msCounter = 0;
   this->rampCounter = 0;
 
-  // Register dimmer object
-  dimmmers[dimmerCount++] = this;
+  // Register dimmer objects
+  if (dimmerCount < MAX_TRIAC)
+    dimmmers[dimmerCount++] = this;
 }
 
 bool Dimmer::begin(){
   pinMode(triacPin, OUTPUT);  
 
   if(!started){
-        halfCycleCounter = 0;
+    //halfCycleCounter = 0;
     pinMode(zeroCrossPin, INPUT);
     attachInterrupt(zeroCrossInt, callZeroCross, RISING);
+    started = true; 
+  }
+
+  if(operationMode != COUNT_MODE){
     // Setup Timer2 to fire every 50ms
     TCCR2A = 0x02;    // CTC mode 
     TCCR2B = 0x02;    // prescaler=8
     TIMSK2 = 0x02;    // Timer2 Compare Match Interrupt Enable
-    OCR2A = 49;      // Compare value
-    started = true; 
+    OCR2A = 49;       // Compare value
   }
 }
 
@@ -105,30 +109,43 @@ uint8_t Dimmer::getValue(){
   }
 }
 
-void Dimmer::set(uint8_t value, uint8_t state){
+void Dimmer::set(uint8_t value){
   if (operationMode == RAMP_MODE){
     lampValue=value;
   }
   else{
     lampValueRamp=value;
   }
+}
 
-  if (state != -1){
-    lampState = (bool) state;
-  }
+void Dimmer::set(uint8_t value, bool state){
+  set(value);
+  lampState = state;
 }
 
 void Dimmer::zeroCross(){
   if (operationMode == COUNT_MODE) {
-    if (halfCycleCounter < lampValueRamp / countResolution && lampState) {
-      digitalWrite(triacPin, HIGH);
-    } else {
-      digitalWrite(triacPin, LOW);
+    if (pulses & 0x80000000 && pulseCount > 0){ // Check the MSB bit
+      pulseCount -= 1;
     }
 
-    if (++halfCycleCounter >= 100 / countResolution) {
-      halfCycleCounter = 0;
+    pulses = pulses << 1;
+    
+    if (lampValueRamp > pulseCount*3){
+      digitalWrite(triacPin, HIGH);
+      digitalWrite(13,       HIGH);
+      pulses += 1;
+      pulseCount += 1;
+    } 
+    else {
+      digitalWrite(triacPin, LOW);
+      digitalWrite(13,       LOW);
+      if (pulseCount > 0) 
+        pulses -= 1;
     }
+    pulses = max(pulses, 32);
+
+  // NORMAL OR COUNT MODE
   } else {
     // Clear counter
     msCounter=0;
@@ -140,10 +157,10 @@ void Dimmer::zeroCross(){
 void Dimmer::triac(){
   if (operationMode != COUNT_MODE) {
     msCounter++;
-        rampCounter++;
+    rampCounter++;
     // With ramp mode
     if (operationMode == RAMP_MODE && rampCounter % countResolution == 0 ) {
-            rampCounter=0;
+      rampCounter=0;
       if(lampValueRamp > lampValue)
         lampValueRamp--;
       else if(lampValueRamp < lampValue)

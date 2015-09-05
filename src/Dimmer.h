@@ -34,7 +34,7 @@
 #define COUNT_MODE      2
 
 /**
- * Possible light state for the dimmer library.
+ * Possible light states for the dimmer.
  */
 #define OFF    0
 #define ON     1
@@ -106,16 +106,25 @@ class Dimmer
     uint8_t getValue();
 
     /**
+     * Sets the value of the light.
+     * @param value   the value of the dimm light. Values from 0 to 100.
+     */
+    void set(uint8_t value);
+
+    /**
      * Sets the value and the state of the light.
      * @param value   the value of the dimm light. Values from 0 to 100.
      * @param state   the state of the light. ON or OFF.
      */
-    void set(uint8_t value, uint8_t state = -1);
+    void set(uint8_t value, bool state);
 
   private:
     uint8_t operationMode;
     uint8_t countResolution;
-    uint8_t halfCycleCounter;
+    //uint8_t halfCycleCounter;
+    uint32_t pulses = 0;
+    uint8_t pulseCount = 0;
+    //
     uint8_t triacPin;
     uint8_t lampValue;
     uint8_t lampValueRamp;
