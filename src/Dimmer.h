@@ -6,6 +6,7 @@
  * Copyright (c) 2015 Circuitar
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
+
 #ifndef DIMMER_H
 #define DIMMER_H
 
@@ -55,19 +56,17 @@ class Dimmer
      *          NORMAL_MODE: Uses timer to apply only a percentage of the AC power to the light.
      *          RAMP_MODE: Same as in normal mode, but it applies a ramp effect to the light.
      *          COUNT_MODE: Counts AC waves and applies full waves from time to time. @see resolution
-     * @param resolution  IN COUNT MODE:
-     *                        divided prescalar to define how many pulses to count.
-     *                        if resolution is 1 the mode counts 100 pulses, if resolution is 2
-     *                        the mode counts 50 pulses, and so on.
-     *
-     *                    IN RAMP MODE:
-     *                        Controlls the speed of the ramp when changing values.
      * @param value   initial intensity in percentage of the dimmed light.
      *          Minimum is 0 and maximum is 100. Default is 50%.
      * @param state   initial state of the light. Possible states: ON or OFF. Default is OFF.
+     * @param resolution  Applied only in RAMP_MODE
+     *          Controlls the speed of the ramp when changing values.
+     *          If resolution is 200 the lamp goes from 0% to 100% in one second.
+     *          Maximum value: 65535. Default value is 300. 
+     *          
      * @see   begin()
      */ 
-    Dimmer(uint8_t triacPin, uint8_t mode = NORMAL_MODE, uint8_t resolution = 1, uint8_t value=50, bool state = ON);
+    Dimmer(uint8_t triacPin, uint8_t mode = NORMAL_MODE, uint8_t value=50, bool state = ON, uint16_t resolution = 300);
 
     /**
      * Initializes the module.
@@ -120,15 +119,15 @@ class Dimmer
 
   private:
     uint8_t operationMode;
-    uint8_t countResolution;
-    uint32_t pulses = 0;
+    uint16_t countResolution;
+    uint64_t pulses = 0;
     uint8_t pulseCount = 0;
     uint8_t triacPin;
     uint8_t lampValue;
     uint8_t lampValueRamp;
     bool lampState;
-    unsigned int msCounter;
-    unsigned int rampCounter;
+    uint8_t msCounter;
+    uint16_t rampCounter;
 
     void zeroCross();
     void triac();
