@@ -67,7 +67,7 @@ class Dimmer
      * @param state   initial state of the light. Possible states: ON or OFF. Default is OFF.
      * @see   begin()
      */ 
-    Dimmer(uint8_t triacPin, uint8_t mode = NORMAL_MODE, uint8_t resolution = 1, uint8_t value=50, bool state = OFF);
+    Dimmer(uint8_t triacPin, uint8_t mode = NORMAL_MODE, uint8_t resolution = 1, uint8_t value=50, bool state = ON);
 
     /**
      * Initializes the module.

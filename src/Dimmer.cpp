@@ -36,7 +36,7 @@ void callZeroCross(){
 }
 
 void callTriac(){
-//  Process ISR for all configured dimmer lights at about 20KHz
+  //  Process ISR for all configured dimmer lights at about 20KHz
   for (uint8_t i = 0; i < dimmerCount; i++) {
     dimmmers[i]->triac();
   }
