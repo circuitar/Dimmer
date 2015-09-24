@@ -47,6 +47,7 @@ ISR(TIMER2_COMPA_vect) {
   callTriac();    
 }
 
+
 // Class Constructor
 Dimmer::Dimmer(uint8_t triacPin, uint8_t mode, uint8_t value, bool state, uint16_t resolution){
   if (dimmerCount < MAX_TRIAC){
@@ -119,8 +120,10 @@ void Dimmer::set(uint8_t value){
   }
   else{
     lampValueRamp=value;
-    pulses = 0;
-    pulseCount = 0;
+    if (operationMode == COUNT_MODE){
+      pulses = 0;
+      pulseCount = 0;
+    }
   }
 }
 
@@ -131,23 +134,23 @@ void Dimmer::set(uint8_t value, bool state){
 
 void Dimmer::zeroCross(){
   if (operationMode == COUNT_MODE) {
-    if (pulses >= 0x8000000000000000 && pulseCount > 0){ // Check the MSB bit
+    if (pulses >= MSB && pulseCount > 0){ // Check the MSB bit
       pulseCount--; 
     }
 
     pulses = pulses << 1;
     
-    if (lampValueRamp > pulseCount * 1.5625){
+    if (lampValueRamp > pulseCount * SCALE){
       digitalWrite(triacPin, HIGH);
-      //if (pulseCount < 32){ // check upper boundary
         pulses++;
         pulseCount++;
-      //}  
-    } else {
+    } 
+    else {
       digitalWrite(triacPin, LOW);
     }
+  } 
   // NORMAL OR RAMP MODE
-  } else {
+  else {
     // Clear counter
     msCounter=0;
     // Turn-off triac
