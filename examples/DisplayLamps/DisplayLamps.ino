@@ -13,9 +13,9 @@
 #include "Dimmer.h"
 
 // Set 3 dimerable lights in ramp mode (smooth transitions) with speed 100 at pins 3,5 and 6
-Dimmer lamp1(3, RAMP_MODE, 100, 50, ON);
-Dimmer lamp2(5, RAMP_MODE, 100, 50, OFF);
-Dimmer lamp3(6, RAMP_MODE, 100, 50, OFF);
+Dimmer lamp1(3, RAMP_MODE, 50, ON, 100);
+Dimmer lamp2(5, RAMP_MODE, 50, OFF, 100);
+Dimmer lamp3(6, RAMP_MODE, 50, OFF, 100);
 
 // Light powers animation
 #define p1  20
