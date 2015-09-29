@@ -73,7 +73,7 @@ class Dimmer
      *
      * Initializes ZeroCross and Timer 2 interrupts. Set the light according to initial settings.
      */
-    bool begin();
+    void begin();
 
     /**
      * Turns the light OFF.
