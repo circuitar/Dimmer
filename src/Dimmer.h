@@ -18,6 +18,15 @@
 #define MAX_TRIAC 10
 
 /**
+ * The number of bits for the buffer in COUNT_MODE. This value can be either 32 or 64.
+ * This buffer is used to store previous power values and predicts the next AC power wave. 
+ * More bits give more precision of the output power while having a slower response.
+ * 32 bits cyle duration is 0.26s and 64 bits cycle duration is 0.53s.
+ * Default value is 32.
+ */
+#define BUFFER 32
+
+/**
  * NanoShield_zeroCross pin settings.
  *
  * @param zeroCrossPin  Change this parameter to the pin your zero cross is attached.
@@ -120,7 +129,6 @@ class Dimmer
   private:
     uint8_t operationMode;
     uint16_t countResolution;
-    uint64_t pulses = 0;
     uint8_t pulseCount = 0;
     uint8_t triacPin;
     uint8_t lampValue;
@@ -128,6 +136,16 @@ class Dimmer
     bool lampState;
     uint8_t msCounter;
     uint16_t rampCounter;
+
+    #if BUFFER == 64
+        #define SCALE (100/64)
+        #define MSB   0x8000000000000000ULL
+        uint64_t pulses = 0;
+    #else
+        #define SCALE (100/32)
+        #define MSB   0x80000000U
+        uint32_t pulses = 0;
+    #endif
 
     void zeroCross();
     void triac();
