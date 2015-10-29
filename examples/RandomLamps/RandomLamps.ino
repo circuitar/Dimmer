@@ -12,9 +12,9 @@
 
 #include "Dimmer.h"
 
-Dimmer lamp1(3, NORMAL_MODE, 100, 50, ON);
-Dimmer lamp2(5, RAMP_MODE, 100, 50, OFF);
-Dimmer lamp3(6, RAMP_MODE, 100, 50, OFF);
+Dimmer lamp1(3);
+Dimmer lamp2(5);
+Dimmer lamp3(6);
 
 int value;
 
@@ -22,18 +22,20 @@ void setup() {
   lamp1.begin();
   lamp2.begin();
   lamp3.begin();
+
   randomSeed(analogRead(0));
 }
 
-void loop(){
-  value=random(0,256);
+void loop() {
+  value = random(0, 255);
   lamp1.set(value);
   delay(500);
-  value=random(0,256);
-  lamp2.set(value);
-  delay(500);
-  value=random(0,256);
-  lamp2.set(value);
-  delay(500);
-};
 
+  value = random(0, 255);
+  lamp2.set(value);
+  delay(500);
+  
+  value = random(0, 255);
+  lamp3.set(value);
+  delay(500);
+}
