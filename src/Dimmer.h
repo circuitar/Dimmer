@@ -30,7 +30,7 @@
  * NanoShield_zeroCross pin settings.
  *
  * @param zeroCrossPin  Change this parameter to the pin your zero cross is attached.
- * @param zeroCrossInt  Change this parameter to the interruption correspondent to the pin of the zero cross. 
+ * @param zeroCrossInt  Change this parameter to the interruption correspondent to the pin of the zero cross.
  * @see https://www.arduino.cc/en/Reference/attachInterrupt for more information.
  */
 #define zeroCrossPin    2
@@ -53,14 +53,14 @@
  * A ZeroCross Nanoshield or similar module to dimm AC lights.
  */
 class Dimmer
-{    
+{
   public:
     /**
      * Constructor.
      *
      * Creates an object to access one Triac Nanoshield.
      * @param triacPin  pin select matching the jumper on the board. (D3, D5, etc)
-     * @param mode  operation mode to crontrol the light. 
+     * @param mode  operation mode to crontrol the light.
      *          Possible modes:
      *          NORMAL_MODE: Uses timer to apply only a percentage of the AC power to the light.
      *          RAMP_MODE: Same as in normal mode, but it applies a ramp effect to the light.
@@ -71,31 +71,31 @@ class Dimmer
      * @param resolution  Applied only in RAMP_MODE
      *          Controlls the speed of the ramp when changing values.
      *          If resolution is 200 the lamp goes from 0% to 100% in one second.
-     *          Maximum value: 65535. Default value is 300. 
-     *          
+     *          Maximum value: 65535. Default value is 300.
+     *
      * @see   begin()
-     */ 
-    Dimmer(uint8_t triacPin, uint8_t mode = NORMAL_MODE, uint8_t value=50, bool state = ON, uint16_t resolution = 300);
+     */
+    Dimmer(uint8_t triacPin, uint8_t mode = NORMAL_MODE, uint8_t value = 50, bool state = ON, uint16_t resolution = 300);
 
     /**
      * Initializes the module.
      *
      * Initializes ZeroCross and Timer 2 interrupts. Set the light according to initial settings.
      */
-    bool begin();
+    void begin();
 
     /**
-     * Turns the light OFF. 
+     * Turns the light OFF.
      */
     void off();
 
     /**
-     * Turns the light ON. 
+     * Turns the light ON.
      */
     void on();
 
     /**
-     * Toggles the light state. 
+     * Toggles the light state.
      */
     void toggle();
 
@@ -127,10 +127,10 @@ class Dimmer
     void set(uint8_t value, bool state);
 
   private:
+    uint8_t triacPin;
     uint8_t operationMode;
     uint16_t countResolution;
-    uint8_t pulseCount = 0;
-    uint8_t triacPin;
+    uint8_t pulseCount;
     uint8_t lampValue;
     uint8_t lampValueRamp;
     bool lampState;
@@ -140,11 +140,11 @@ class Dimmer
     #if BUFFER == 64
         #define SCALE (100/64)
         #define MSB   0x8000000000000000ULL
-        uint64_t pulses = 0;
+        uint64_t pulses;
     #else
         #define SCALE (100/32)
         #define MSB   0x80000000U
-        uint32_t pulses = 0;
+        uint32_t pulses;
     #endif
 
     void zeroCross();

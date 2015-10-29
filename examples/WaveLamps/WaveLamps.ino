@@ -12,26 +12,28 @@
 
 #include "Dimmer.h"
 
-//store dimm lights in array
-Dimmer dimm[] = { Dimmer(3, RAMP_MODE, 100, 50, ON), 
-                  Dimmer(5, RAMP_MODE, 100, 50, OFF),
-                  Dimmer(6, RAMP_MODE, 100, 50, OFF) 
-                };
+Dimmer dimm[] = {
+  Dimmer(3, RAMP_MODE),
+  Dimmer(5, RAMP_MODE),
+  Dimmer(6, RAMP_MODE)
+};
+
 #define p1  20
 #define p2  60
 
-byte pot[6][3] = {  {p2,  0, 0 }, 
-                    {p1, p1, 0 },
-                    {0 , p2, 0 }, 
-                    {0 , p1, p1}, 
-                    {0 ,  0, p2},
-                    {p1,  0, p1}
-                  };
+byte pot[6][3] = {
+  {p2,  0, 0 },
+  {p1, p1, 0 },
+  {0 , p2, 0 },
+  {0 , p1, p1},
+  {0 ,  0, p2},
+  {p1,  0, p1}
+};
 
 void setup() {
-    dimm[0].begin();
-    dimm[1].begin();
-    dimm[2].begin();
+  dimm[0].begin();
+  dimm[1].begin();
+  dimm[2].begin();
 }
 
 void loop(){
