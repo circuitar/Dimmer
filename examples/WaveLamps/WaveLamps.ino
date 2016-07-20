@@ -1,46 +1,42 @@
 /**
- * Control 3 dimmable lamps in a wave form
+ * Control 3 dimmable lamps in a wave form.
  *
  * Copyright (c) 2015 Circuitar
- * All rights reserved.
- *
- * This software is released under a BSD license. See the attached LICENSE file for details.
- *
- * http://www.circuitar.com.br
- *
+ * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 
 #include "Dimmer.h"
 
-Dimmer dimm[] = {
-  Dimmer(3, RAMP_MODE),
-  Dimmer(5, RAMP_MODE),
-  Dimmer(6, RAMP_MODE)
+Dimmer dimmers[] = {
+  Dimmer(3, DIMMER_RAMP),
+  Dimmer(5, DIMMER_RAMP),
+  Dimmer(6, DIMMER_RAMP)
 };
 
-#define p1  20
-#define p2  60
+#define P1 20         // Power level 1 = 20%
+#define P2 60         // Power level 2 = 60%
 
-byte pot[6][3] = {
-  {p2,  0, 0 },
-  {p1, p1, 0 },
-  {0 , p2, 0 },
-  {0 , p1, p1},
-  {0 ,  0, p2},
-  {p1,  0, p1}
+byte power[6][3] = {
+  { P2,  0,  0 },
+  { P1, P1,  0 },
+  {  0, P2,  0 },
+  {  0, P1, P1 },
+  {  0,  0, P2 },
+  { P1,  0, P1 }
 };
 
 void setup() {
-  dimm[0].begin();
-  dimm[1].begin();
-  dimm[2].begin();
+  dimmers[0].begin();
+  dimmers[1].begin();
+  dimmers[2].begin();
 }
 
-void loop(){
-  for(byte i=0; i<6; i++){
-    for(byte j=0; j<3; j++){
-      dimm[j].set(pot[i][j]);
+void loop() {
+  for(int i = 0; i < 6; i++) {
+    for(int j = 0; j < 3; j++) {
+      dimmers[j].set(power[i][j]);
     }
-    delay(200);
+
+    delay(1000);
   }
 }

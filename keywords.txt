@@ -5,7 +5,6 @@
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-
 Dimmer	KEYWORD1
 
 #######################################
@@ -15,18 +14,13 @@ begin	KEYWORD2
 off	KEYWORD2
 on	KEYWORD2
 toggle	KEYWORD2
-getState	KEYWORD2
 getValue	KEYWORD2
+getState	KEYWORD2
 set	KEYWORD2
-zeroCross	KEYWORD2
-triac	KEYWORD2
-
 
 #######################################
 # Constants (LITERAL1)
 #######################################
-NORMAL_MODE	LITERAL1
-RAMP_MODE	LITERAL1
-COUNT_MODE	LITERAL1
-ON	LITERAL1
-OFF	LITERAL1
+DIMMER_NORMAL	LITERAL1
+DIMMER_RAMP	LITERAL1
+DIMMER_COUNT	LITERAL1
