@@ -23,6 +23,17 @@
 #define DIMMER_BUFFER 32
 
 /**
+ * Timer to use for control of triac timing.
+ */
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+#define DIMMER_TIMER 4
+#elif defined(__AVR_ATmega32U4__)
+#define DIMMER_TIMER 3
+#else
+#define DIMMER_TIMER 2
+#endif
+
+/**
  * Zero cross circuit settings.
  *
  * @param DIMMER_ZERO_CROSS_PIN Change this parameter to the pin your zero cross circuit is attached.
@@ -119,8 +130,17 @@ class Dimmer {
      */
     void set(uint8_t value, bool on);
 
+    /**
+     * Sets the mimimum acceptable power level. This is useful to control loads that cannot be
+     * dimmed to a very low level, like dimmable LED or CFL lamps.
+     *
+     * @param value the minimum value (intensity) to use. Accepts values from 0 to 100.
+     */
+    void setMinimum(uint8_t value);
+
   private:
     static bool started;
+    static bool timerStarted;
     uint8_t triacPin;
     uint8_t triacPinMask;
     volatile uint8_t* triacPinPort;
@@ -128,6 +148,7 @@ class Dimmer {
     uint8_t currentTriacTime;
     bool lampState;
     uint8_t lampValue;
+    uint8_t minValue;
     uint8_t rampStartValue;
     uint16_t rampCounter;
     uint16_t rampCycles;
