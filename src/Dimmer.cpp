@@ -7,6 +7,7 @@
 
 #include "Arduino.h"
 #include "Dimmer.h"
+#include <util/atomic.h>
 
 // Timer configuration macros
 #define _TCNT(X) TCNT ## X
@@ -154,7 +155,9 @@ void Dimmer::on() {
 }
 
 void Dimmer::toggle() {
-  lampState = !lampState;
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    lampState = !lampState;
+  }
 }
 
 bool Dimmer::getState() {
@@ -162,7 +165,9 @@ bool Dimmer::getState() {
 }
 
 uint8_t Dimmer::getValue() {
-  return rampStartValue + ((int32_t) lampValue - rampStartValue) * rampCounter / rampCycles;
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    return rampStartValue + ((int32_t) lampValue - rampStartValue) * rampCounter / rampCycles;
+  }
 }
 
 void Dimmer::set(uint8_t value) {
@@ -174,14 +179,16 @@ void Dimmer::set(uint8_t value) {
     value = minValue;
   }
 
-  if (operatingMode == DIMMER_RAMP) {
-    rampStartValue = getValue();
-    rampCounter = 0;
-  } else if (operatingMode == DIMMER_COUNT) {
-    pulses = 0;
-    pulseCount = 0;
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    if (operatingMode == DIMMER_RAMP) {
+      rampStartValue = getValue();
+      rampCounter = 0;
+    } else if (operatingMode == DIMMER_COUNT) {
+      pulses = 0;
+      pulseCount = 0;
+    }
+    lampValue = value;
   }
-  lampValue = value;
 }
 
 void Dimmer::set(uint8_t value, bool on) {
@@ -196,8 +203,10 @@ void Dimmer::setMinimum(uint8_t value) {
 
   minValue = value;
 
-  if (lampValue < minValue) {
-    set(value);
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    if (lampValue < minValue) {
+      set(value);
+    }
   }
 }
 

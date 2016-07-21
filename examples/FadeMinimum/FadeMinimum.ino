@@ -12,12 +12,12 @@ Dimmer dimmer(3, DIMMER_RAMP, 1.5);
 
 void setup() {
   dimmer.begin();
-  dimmer.setMinimum(25);
+  dimmer.setMinimum(20);
 }
 
 void loop() {
   dimmer.set(100);
-  delay(1500);
+  delay(2500);
   dimmer.set(0);
-  delay(1500);
+  delay(2500);
 }

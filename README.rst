@@ -14,6 +14,7 @@ To install, just click **Download ZIP** and install it using **Sketch > Include 
 The following examples_ are provided:
 
 * Fade_ Arduino Fade example using an AC lamp.
+* FadeMinimum_ Arduino Fade example using an AC lamp and setting a minimum power level (useful for dimmable LED or CFL lamps).
 * RandomLamps_ Control 3 dimmable lamps with random values (can be extended to 10 lamps).
 * WaveLamps_ Control 3 dimmable lamps in a wave form (can be extended to 10 lamps).
 * CountMode_ Control high, low response AC loads without introducing noise using count mode.
@@ -23,6 +24,7 @@ The following examples_ are provided:
 .. _Circuitar: https://www.circuitar.com/
 .. _examples: https://github.com/circuitar/Dimmer/tree/master/examples/
 .. _Fade: https://github.com/circuitar/Dimmer/blob/master/examples/Fade/Fade.ino
+.. _FadeMinimum: https://github.com/circuitar/Dimmer/blob/master/examples/FadeMinimum/FadeMinimum.ino
 .. _RandomLamps: https://github.com/circuitar/Dimmer/blob/master/examples/RandomLamps/RandomLamps.ino
 .. _WaveLamps: https://github.com/circuitar/Dimmer/blob/master/examples/WaveLamps/WaveLamps.ino
 .. _CountMode: https://github.com/circuitar/Dimmer/blob/master/examples/CountMode/CountMode.ino
