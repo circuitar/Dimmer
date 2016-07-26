@@ -21,7 +21,7 @@ void setup() {
 }
 
 void loop() {
-  value += 10;
+  value += 5;
   if (value > 100) {
     value = 0;
   }
@@ -32,5 +32,5 @@ void loop() {
   Serial.print(value);
   Serial.println("%");
   
-  delay(5000);
+  delay(3000);
 }

@@ -23,6 +23,8 @@
 #define _TIMER_COMPA_VECTOR(X) TIMER ## X ## _COMPA_vect
 #define TIMER_COMPA_VECTOR(X) _TIMER_COMPA_VECTOR(X)
 
+#define DIMMER_PULSES_TO_VALUE(pulses, bits) ((uint16_t)(pulses) * 100 / (bits))
+
 #if DIMMER_TIMER == 2
 
 // 8-bit timer
@@ -42,7 +44,7 @@
 //   triac, where the array index is the applied power from 1 to 100, minus one. This array is
 //   calculated based on the equation of the effective power applied to a resistive load over
 //   time, assuming a 60HZ sinusoidal wave.
-static uint8_t triacTime[] = {
+static const uint8_t triacTime[] PROGMEM = {
   147, 142, 139, 136, 133, 131, 129, 127, 125, 124,
   122, 121, 119, 118, 116, 115, 114, 113, 112, 111,
   110, 108, 107, 106, 105, 104, 103, 102, 102, 101,
@@ -73,12 +75,13 @@ void callZeroCross() {
   // Process each registered dimmer object
   for (uint8_t i = 0; i < dimmerCount; i++) {
     dimmmers[i]->zeroCross();
+    dimmmers[i]->triac();
   }
 }
 
 void callTriac() {
   // Increment Timer 2 interrupt counter
-  if (tmrCount < 255) {
+  if (tmrCount < 254) {
     tmrCount++;
   }
 
@@ -88,7 +91,7 @@ void callTriac() {
   }
 }
 
-// Timer2 compare interruption
+// Timer interrupt
 ISR(TIMER_COMPA_VECTOR(DIMMER_TIMER)) {
   callTriac();
 }
@@ -105,8 +108,10 @@ Dimmer::Dimmer(uint8_t pin, uint8_t mode, double rampTime, uint8_t freq) :
         rampStartValue(0),
         rampCounter(1),
         rampCycles(1),
+        pulsesHigh(0),
+        pulsesLow(0),
         pulseCount(0),
-        pulses(0),
+        pulsesUsed(0),
         acFreq(freq) {
   if (dimmerCount < DIMMER_MAX_TRIAC) {
     // Register dimmer object being created
@@ -114,9 +119,7 @@ Dimmer::Dimmer(uint8_t pin, uint8_t mode, double rampTime, uint8_t freq) :
   }
 
   if (mode == DIMMER_RAMP) {
-    rampTime = rampTime * 2 * freq;
-    rampCycles = rampTime > 0xFFFF ? 0xFFFF : rampTime;
-    rampCounter = rampCycles;
+    setRampTime(rampTime);
   }
 }
 
@@ -180,14 +183,18 @@ void Dimmer::set(uint8_t value) {
   }
 
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    if (operatingMode == DIMMER_RAMP) {
-      rampStartValue = getValue();
-      rampCounter = 0;
-    } else if (operatingMode == DIMMER_COUNT) {
-      pulses = 0;
-      pulseCount = 0;
+    if (value != lampValue) {
+      if (operatingMode == DIMMER_RAMP) {
+        rampStartValue = getValue();
+        rampCounter = 0;
+      } else if (operatingMode == DIMMER_COUNT) {
+        pulsesHigh = 0;
+        pulsesLow = 0;
+        pulseCount = 0;
+        pulsesUsed = 0;
+      }
+      lampValue = value;
     }
-    lampValue = value;
   }
 }
 
@@ -210,22 +217,45 @@ void Dimmer::setMinimum(uint8_t value) {
   }
 }
 
+void Dimmer::setRampTime(double rampTime) {
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    rampTime = rampTime * 2 * acFreq;
+    rampCycles = rampTime > 0xFFFF ? 0xFFFF : rampTime;
+    rampCounter = rampCycles;
+  }
+}
+
 void Dimmer::zeroCross() {
   if (operatingMode == DIMMER_COUNT) {
-    // Check the MSB bit
-    if (pulses >= DIMMER_MSB && pulseCount > 0) {
-      pulseCount--;
+    // Remove MSB from buffer and decrement pulse count accordingly
+    if (pulseCount > 0 && (pulsesHigh & (1ULL << 35))) {
+      pulsesHigh &= ~(1ULL << 35);
+      if (pulseCount > 0) {
+        pulseCount--;
+      }
     }
 
-    pulses = pulses << 1;
+    // Shift 100-bit buffer to the right
+    pulsesHigh <<= 1;
+    if (pulsesLow & (1ULL << 63)) {
+      pulsesHigh++;
+    }
+    pulsesLow <<= 1;
 
-    if (lampValue > pulseCount * DIMMER_SCALE) {
+    // Turn next half cycle on if number of pulses is low within the used buffer
+    if (lampValue > DIMMER_PULSES_TO_VALUE(pulseCount, pulsesUsed)) {
       *triacPinPort |= triacPinMask;
-      pulses++;
+      pulsesLow++;
       pulseCount++;
     } else {
       *triacPinPort &= ~triacPinMask;
     }
+
+    // Update number of bits used in the buffer
+    if (pulsesUsed < 100) {
+      pulsesUsed++;
+    }
+
   } else {
     // Turn-off triac
     *triacPinPort &= ~triacPinMask;
@@ -233,7 +263,7 @@ void Dimmer::zeroCross() {
     // Calculate triac time for the current cycle
     uint8_t value = getValue();
     if (value > 0 && lampState) {
-      currentTriacTime = triacTime[value - 1];
+      currentTriacTime = pgm_read_byte(&triacTime[value - 1]);
     } else {
       currentTriacTime = 255;
     }
@@ -246,7 +276,7 @@ void Dimmer::zeroCross() {
 }
 
 void Dimmer::triac() {
-  if (operatingMode != DIMMER_COUNT && tmrCount >= currentTriacTime) {
+  if (tmrCount == currentTriacTime) {
     *triacPinPort |= triacPinMask;
   }
 }

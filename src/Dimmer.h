@@ -9,18 +9,9 @@
 #define DIMMER_H
 
 /**
- * Maximum number of triacs that can be used. This is also the default value.
+ * Maximum number of triacs that can be used. Can be decreased to save RAM.
  */
 #define DIMMER_MAX_TRIAC 10
-
-/**
- * The number of bits for the buffer in COUNT_MODE. This value can be either 32 or 64.
- * This buffer is used to store previous power values and predicts the next AC power wave. 
- * More bits give more precision of the output power while having a slower response.
- * 32 bits cyle duration is 0.26s and 64 bits cycle duration is 0.53s.
- * Default value is 32.
- */
-#define DIMMER_BUFFER 32
 
 /**
  * Timer to use for control of triac timing.
@@ -69,7 +60,7 @@ class Dimmer {
      *          NORMAL_MODE: Uses timer to apply only a percentage of the AC power to the lamp every half cycle.
      *          RAMP_MODE: Same as in normal mode, but it applies a ramp effect when changing levels. @see rampTime
      *          COUNT_MODE: Counts AC waves and applies full half cycles from time to time.
-     * @param rampTime time it takes for the value to rise from 0% to 100% in RAMP_MODE. Default 1.5, maximum 500.
+     * @param rampTime time it takes for the value to rise from 0% to 100% in RAMP_MODE, in seconds. Default 1.5. @see setRampTime().
      * @param freq AC frequency, in Hz. Supported values are 60Hz and 50Hz, use others at your own risk.
      *
      * @see begin()
@@ -138,6 +129,13 @@ class Dimmer {
      */
     void setMinimum(uint8_t value);
 
+    /**
+     * Sets tje time it takes for the value to rise from 0% to 100% in RAMP_MODE, in seconds.
+     *
+     * @param value the ramp time. Maximum is 2^16 / (2 * AC frequency)
+     */
+    void setRampTime(double rampTime);
+
   private:
     static bool started;
     static bool timerStarted;
@@ -152,18 +150,11 @@ class Dimmer {
     uint8_t rampStartValue;
     uint16_t rampCounter;
     uint16_t rampCycles;
-    uint8_t pulseCount;
     uint8_t acFreq;
-
-    #if DIMMER_BUFFER == 64
-        #define DIMMER_SCALE (100/64)
-        #define DIMMER_MSB   0x8000000000000000ULL
-        uint64_t pulses;
-    #else
-        #define DIMMER_SCALE (100/32)
-        #define DIMMER_MSB   0x80000000U
-        uint32_t pulses;
-    #endif
+    uint8_t pulseCount;
+    uint8_t pulsesUsed;
+    uint64_t pulsesHigh;
+    uint64_t pulsesLow;
 
     void zeroCross();
     void triac();
