@@ -138,12 +138,9 @@ class Dimmer {
 
   private:
     static bool started;
-    static bool timerStarted;
+    uint8_t dimmerIndex;
     uint8_t triacPin;
-    uint8_t triacPinMask;
-    volatile uint8_t* triacPinPort;
     uint8_t operatingMode;
-    uint8_t currentTriacTime;
     bool lampState;
     uint8_t lampValue;
     uint8_t minValue;
@@ -157,7 +154,6 @@ class Dimmer {
     uint64_t pulsesLow;
 
     void zeroCross();
-    void triac();
 
     friend void callTriac();
     friend void callZeroCross();

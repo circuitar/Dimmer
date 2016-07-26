@@ -23,6 +23,7 @@
 #define _TIMER_COMPA_VECTOR(X) TIMER ## X ## _COMPA_vect
 #define TIMER_COMPA_VECTOR(X) _TIMER_COMPA_VECTOR(X)
 
+// Helper macros
 #define DIMMER_PULSES_TO_VALUE(pulses, bits) ((uint16_t)(pulses) * 100 / (bits))
 
 #if DIMMER_TIMER == 2
@@ -33,7 +34,7 @@
 
 #elif (DIMMER_TIMER == 1 || DIMMER_TIMER == 3 || DIMMER_TIMER == 4 || DIMMER_TIMER == 5)
 
-// 16-bit timer ()
+// 16-bit timer
 #define TCCRxA_VALUE 0x00 // CTC mode
 #define TCCRxB_VALUE 0x0A // CTC mode, Prescaler = 8 => Cycle = 0.5us @ 16MHz
 
@@ -44,7 +45,7 @@
 //   triac, where the array index is the applied power from 1 to 100, minus one. This array is
 //   calculated based on the equation of the effective power applied to a resistive load over
 //   time, assuming a 60HZ sinusoidal wave.
-static const uint8_t triacTime[] PROGMEM = {
+static const uint8_t powerToTicks[] PROGMEM = {
   147, 142, 139, 136, 133, 131, 129, 127, 125, 124,
   122, 121, 119, 118, 116, 115, 114, 113, 112, 111,
   110, 108, 107, 106, 105, 104, 103, 102, 102, 101,
@@ -58,51 +59,63 @@ static const uint8_t triacTime[] PROGMEM = {
 };
 
 // Dimmer registry
-static Dimmer* dimmmers[DIMMER_MAX_TRIAC]; // Pointers to all registered dimmer objects
-static uint8_t dimmerCount = 0;            // Number of registered dimmer objects
+static Dimmer* dimmmers[DIMMER_MAX_TRIAC];     // Pointers to all registered dimmer objects
+static uint8_t dimmerCount = 0;                // Number of registered dimmer objects
 
+// Triac pin and timing variables. Using global arrays to make ISR fast.
+static volatile uint8_t* triacPinPorts[DIMMER_MAX_TRIAC]; // Triac ports for registered dimmers
+static uint8_t triacPinMasks[DIMMER_MAX_TRIAC];           // Triac pin mask for registered dimmers
+static uint8_t triacTimes[DIMMER_MAX_TRIAC];              // Triac time for registered dimmers
+
+// Timer ticks since zero crossing
 static uint8_t tmrCount = 0;
 
-bool Dimmer::started = false;
-bool Dimmer::timerStarted = false;
+// Global state variables
+bool Dimmer::started = false; // At least one dimmer has started
 
 // Zero cross interrupt
 void callZeroCross() {
-  // Reset Timer 2 and clear interrupt counter
+  // Clear the timer and enable nested interrupts so that the timer can be updated while this ISR is executed
   TCNT(DIMMER_TIMER) = 0;
   tmrCount = 0;
+  sei();
+
+  // Turn off all triacs and disable further triac activation before anything else
+  for (uint8_t i = 0; i < dimmerCount; i++) {
+    *triacPinPorts[i] &= ~triacPinMasks[i];
+    triacTimes[i] = 255;
+  }
 
   // Process each registered dimmer object
   for (uint8_t i = 0; i < dimmerCount; i++) {
     dimmmers[i]->zeroCross();
-    dimmmers[i]->triac();
-  }
-}
 
-void callTriac() {
-  // Increment Timer 2 interrupt counter
-  if (tmrCount < 254) {
-    tmrCount++;
-  }
-
-  //  Process ISR for all configured dimmer lights at about 20KHz
-  for (uint8_t i = 0; i < dimmerCount; i++) {
-    dimmmers[i]->triac();
+    // If triac time was already reached, activate it
+    if (tmrCount >= triacTimes[i]) {
+      *triacPinPorts[i] |= triacPinMasks[i];
+    }
   }
 }
 
 // Timer interrupt
 ISR(TIMER_COMPA_VECTOR(DIMMER_TIMER)) {
-  callTriac();
+  // Increment ticks
+  if (tmrCount < 254) {
+    tmrCount++;
+  }
+
+  // Process each registered triac and turn it on if needed
+  for (uint8_t i = 0; i < dimmerCount; i++) {
+    if (tmrCount == triacTimes[i]) {
+      *triacPinPorts[i] |= triacPinMasks[i];
+    }
+  }
 }
 
 // Constructor
 Dimmer::Dimmer(uint8_t pin, uint8_t mode, double rampTime, uint8_t freq) :
         triacPin(pin),
-        triacPinMask(digitalPinToBitMask(pin)),
-        triacPinPort(portOutputRegister(digitalPinToPort(pin))),
         operatingMode(mode),
-        currentTriacTime(255),
         lampState(false),
         lampValue(0),
         rampStartValue(0),
@@ -115,7 +128,10 @@ Dimmer::Dimmer(uint8_t pin, uint8_t mode, double rampTime, uint8_t freq) :
         acFreq(freq) {
   if (dimmerCount < DIMMER_MAX_TRIAC) {
     // Register dimmer object being created
+    dimmerIndex = dimmerCount;
     dimmmers[dimmerCount++] = this;
+    triacPinPorts[dimmerIndex] = portOutputRegister(digitalPinToPort(pin));
+    triacPinMasks[dimmerIndex] = digitalPinToBitMask(pin);
   }
 
   if (mode == DIMMER_RAMP) {
@@ -131,21 +147,19 @@ void Dimmer::begin(uint8_t value, bool on) {
   pinMode(triacPin, OUTPUT);
   digitalWrite(triacPin, LOW);
 
-  // Start zero cross circuit if not started yet
   if (!started) {
+    // Start zero cross circuit if not started yet
     pinMode(DIMMER_ZERO_CROSS_PIN, INPUT);
     attachInterrupt(DIMMER_ZERO_CROSS_INTERRUPT, callZeroCross, RISING);
-    started = true;
-  }
 
-  if (operatingMode != DIMMER_COUNT && !timerStarted) {
     // Setup timer to fire every 50us @ 60Hz
     TCNT(DIMMER_TIMER) = 0;                      // Clear timer
     TCCRxA(DIMMER_TIMER) = TCCRxA_VALUE;         // Timer config byte A
     TCCRxB(DIMMER_TIMER) = TCCRxB_VALUE;         // Timer config byte B
     TIMSKx(DIMMER_TIMER) = 0x02;                 // Timer Compare Match Interrupt Enable
     OCRxA(DIMMER_TIMER) = 100 * 60 / acFreq - 1; // Compare value (frequency adjusted)
-    timerStarted = true;
+
+    started = true;
   }
 }
 
@@ -244,11 +258,10 @@ void Dimmer::zeroCross() {
 
     // Turn next half cycle on if number of pulses is low within the used buffer
     if (lampValue > DIMMER_PULSES_TO_VALUE(pulseCount, pulsesUsed)) {
-      *triacPinPort |= triacPinMask;
+      // Turn dimmer on at zero crossing time, @10 ticks (500us)
+      triacTimes[dimmerIndex] = 10;
       pulsesLow++;
       pulseCount++;
-    } else {
-      *triacPinPort &= ~triacPinMask;
     }
 
     // Update number of bits used in the buffer
@@ -257,26 +270,15 @@ void Dimmer::zeroCross() {
     }
 
   } else {
-    // Turn-off triac
-    *triacPinPort &= ~triacPinMask;
-
     // Calculate triac time for the current cycle
     uint8_t value = getValue();
     if (value > 0 && lampState) {
-      currentTriacTime = pgm_read_byte(&triacTime[value - 1]);
-    } else {
-      currentTriacTime = 255;
+      triacTimes[dimmerIndex] = pgm_read_byte(&powerToTicks[value - 1]);
     }
 
     // Increment the ramp counter until it reaches the total number of cycles for the ramp
     if (operatingMode == DIMMER_RAMP && rampCounter < rampCycles) {
       rampCounter++;
     }
-  }
-}
-
-void Dimmer::triac() {
-  if (tmrCount == currentTriacTime) {
-    *triacPinPort |= triacPinMask;
   }
 }
