@@ -110,7 +110,14 @@ ISR(TIMER_COMPA_VECTOR(DIMMER_TIMER)) {
       *triacPinPorts[i] |= triacPinMasks[i];
     }
   }
-}
+  if (zeroCrossedTriac) {
+    delayMicroseconds(10);
+    // Turn off all triacs
+    for (uint8_t i = 0; i < dimmerCount; i++) {
+      *triacPinPorts[i] &= ~triacPinMasks[i];
+      }
+    }
+  }
 
 // Constructor
 Dimmer::Dimmer(uint8_t pin, uint8_t mode, double rampTime, uint8_t freq,bool zero_crossed_triac) :
