@@ -125,7 +125,8 @@ Dimmer::Dimmer(uint8_t pin, uint8_t mode, double rampTime, uint8_t freq,bool zer
         pulsesLow(0),
         pulseCount(0),
         pulsesUsed(0),
-        acFreq(freq) {
+        acFreq(freq),
+       zeroCrossedTriac(zero_crossed_triac) {
   if (dimmerCount < DIMMER_MAX_TRIAC) {
     // Register dimmer object being created
     dimmerIndex = dimmerCount;
@@ -157,7 +158,7 @@ void Dimmer::begin(uint8_t value, bool on) {
     TCCRxA(DIMMER_TIMER) = TCCRxA_VALUE;         // Timer config byte A
     TCCRxB(DIMMER_TIMER) = TCCRxB_VALUE;         // Timer config byte B
     TIMSKx(DIMMER_TIMER) = 0x02;                 // Timer Compare Match Interrupt Enable
-    OCRxA(DIMMER_TIMER) = 100 * freq / acFreq - 1; // Compare value (frequency adjusted)
+    OCRxA(DIMMER_TIMER) = 100 * 50 / acFreq - 1; // Compare value (frequency adjusted)
 
     started = true;
   }
