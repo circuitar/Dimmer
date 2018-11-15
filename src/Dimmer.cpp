@@ -113,7 +113,7 @@ ISR(TIMER_COMPA_VECTOR(DIMMER_TIMER)) {
 }
 
 // Constructor
-Dimmer::Dimmer(uint8_t pin, uint8_t mode, double rampTime, uint8_t freq) :
+Dimmer::Dimmer(uint8_t pin, uint8_t mode, double rampTime, uint8_t freq,bool zero_crossed_triac) :
         triacPin(pin),
         operatingMode(mode),
         lampState(false),
@@ -157,7 +157,7 @@ void Dimmer::begin(uint8_t value, bool on) {
     TCCRxA(DIMMER_TIMER) = TCCRxA_VALUE;         // Timer config byte A
     TCCRxB(DIMMER_TIMER) = TCCRxB_VALUE;         // Timer config byte B
     TIMSKx(DIMMER_TIMER) = 0x02;                 // Timer Compare Match Interrupt Enable
-    OCRxA(DIMMER_TIMER) = 100 * 60 / acFreq - 1; // Compare value (frequency adjusted)
+    OCRxA(DIMMER_TIMER) = 100 * freq / acFreq - 1; // Compare value (frequency adjusted)
 
     started = true;
   }
