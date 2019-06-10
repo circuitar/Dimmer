@@ -204,6 +204,8 @@ void Dimmer::set(uint8_t value) {
     if (value != lampValue) {
       if (operatingMode == DIMMER_RAMP) {
         rampStartValue = getValue();
+		rampCycles = (((int32_t)abs(value-rampStartValue))*totalRampCycles)/100;
+		if(rampCycles<1){rampCycles=1;}
         rampCounter = 0;
       } else if (operatingMode == DIMMER_COUNT) {
         pulsesHigh = 0;
@@ -238,8 +240,8 @@ void Dimmer::setMinimum(uint8_t value) {
 void Dimmer::setRampTime(double rampTime) {
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     rampTime = rampTime * 2 * acFreq;
-    rampCycles = rampTime > 0xFFFF ? 0xFFFF : rampTime;
-    rampCounter = rampCycles;
+    totalRampCycles = rampTime > 0xFFFF ? 0xFFFF : rampTime;
+    rampCounter = rampCycles= totalRampCycles;
   }
 }
 

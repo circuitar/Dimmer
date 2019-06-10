@@ -154,6 +154,7 @@ class Dimmer {
     uint8_t rampStartValue;
     uint16_t rampCounter;
     uint16_t rampCycles;
+	uint16_t totalRampCycles;
     uint8_t acFreq;
     uint8_t pulseCount;
     uint8_t pulsesUsed;
