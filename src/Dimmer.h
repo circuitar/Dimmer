@@ -100,6 +100,13 @@ class Dimmer {
     uint8_t getValue();
 
     /**
+     * Gets the current set value (intensity) of the lamp.
+     *
+     * @return current set lamp value, from 0 to 100.
+     */
+    uint8_t getSetValue();
+
+    /**
      * Gets the current state of the lamp.
      *
      * @return current lamp state. ON or OFF.

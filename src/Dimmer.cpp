@@ -187,6 +187,10 @@ uint8_t Dimmer::getValue() {
   }
 }
 
+uint8_t Dimmer::getSetValue() {
+    return lampValue;
+}
+
 void Dimmer::set(uint8_t value) {
   if (value > 100) {
     value = 100;
