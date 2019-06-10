@@ -17,6 +17,7 @@ toggle	KEYWORD2
 getValue	KEYWORD2
 getState	KEYWORD2
 getSetValue KEYWORD2
+setRampTime KEYWORD2
 set	KEYWORD2
 
 #######################################
