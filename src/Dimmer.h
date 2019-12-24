@@ -62,6 +62,7 @@ class Dimmer {
      *          COUNT_MODE: Counts AC waves and applies full half cycles from time to time.
      * @param rampTime time it takes for the value to rise from 0% to 100% in RAMP_MODE, in seconds. Default 1.5. @see setRampTime().
      * @param freq AC frequency, in Hz. Supported values are 60Hz and 50Hz, use others at your own risk.
+     * @param zero_crossed_triac Zero crossing triac (true), non zero crossing track (false) 
      *
      * @see begin()
      */
