@@ -2,6 +2,7 @@
  * This is a library to control the intensity of dimmable AC lamps or other AC loads using triacs.
  *
  * Copyright (c) 2015 Circuitar
+ * Updated by hamidsaffari@yahoo.com @ 2020
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 
