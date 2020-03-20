@@ -5,13 +5,13 @@
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 
-#ifndef DIMMER_H
-#define DIMMER_H
+#ifndef DIMMER_2_H
+#define DIMMER_2_H
 
 /**
  * Maximum number of triacs that can be used. Can be decreased to save RAM.
  */
-#define DIMMER_MAX_TRIAC 10
+#define DIMMER_MAX_TRIAC 1
 
 /**
  * Timer to use for control of triac timing.
@@ -19,6 +19,8 @@
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #define DIMMER_TIMER 4
 #elif defined(__AVR_ATmega32U4__)
+#define DIMMER_TIMER 3
+#elif defined(ARDUINO_ARCH_STM32F1)
 #define DIMMER_TIMER 3
 #else
 #define DIMMER_TIMER 2
@@ -32,8 +34,8 @@
  *
  * @see https://www.arduino.cc/en/Reference/attachInterrupt for more information.
  */
-#define DIMMER_ZERO_CROSS_PIN       2
-#define DIMMER_ZERO_CROSS_INTERRUPT 0
+//#define DIMMER_ZERO_CROSS_PIN       2
+//#define DIMMER_ZERO_CROSS_INTERRUPT 0
 
 /**
  * Possible operating modes for the dimmer library.
@@ -41,6 +43,19 @@
 #define DIMMER_NORMAL 0
 #define DIMMER_RAMP   1
 #define DIMMER_COUNT  2
+
+//================== added by Hamid ================
+
+#define Auto_Main_frequency_detection
+
+#ifdef Auto_Main_frequency_detection
+  #define NUMBER_OF_SAMLPLES_FOR_MAIN_FREQUENCY_DETECTION  25
+#endif
+
+#define MAX_INPUT_FREQUENCY 80 // Hz 
+#define MIN_INPUT_FREQUENCY 30 // Hz
+
+//==================================================
 
 /**
  * A dimmer channel.
@@ -65,7 +80,7 @@ class Dimmer {
      *
      * @see begin()
      */
-    Dimmer(uint8_t pin, uint8_t mode = DIMMER_NORMAL, double rampTime = 1.5, uint8_t freq = 60);
+    Dimmer(uint8_t pin, uint8_t zc_dimmer_pin, uint8_t mode = DIMMER_NORMAL, double rampTime = 1.5, uint8_t freq = 60);
 
     /**
      * Initializes the module.
@@ -135,11 +150,15 @@ class Dimmer {
      * @param value the ramp time. Maximum is 2^16 / (2 * AC frequency)
      */
     void setRampTime(double rampTime);
+	
+	uint8_t getAcFrequency();
+
 
   private:
     static bool started;
     uint8_t dimmerIndex;
     uint8_t triacPin;
+	uint8_t zc_pin;
     uint8_t operatingMode;
     bool lampState;
     uint8_t lampValue;
@@ -152,11 +171,14 @@ class Dimmer {
     uint8_t pulsesUsed;
     uint64_t pulsesHigh;
     uint64_t pulsesLow;
+	
 
     void zeroCross();
 
     friend void callTriac();
     friend void callZeroCross();
+	friend void onTimerISR();
+	
 };
 
 #endif
