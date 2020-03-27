@@ -2,7 +2,6 @@
  * This is a library to control the intensity of dimmable AC lamps or other AC loads using triacs.
  *
  * Copyright (c) 2015 Circuitar
- * Updated by hamidsaffari@yahoo.com @ 2020
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 
@@ -21,7 +20,7 @@
 #define DIMMER_TIMER 4
 #elif defined(__AVR_ATmega32U4__)
 #define DIMMER_TIMER 3
-#elif defined(ARDUINO_ARCH_STM32F1)
+#elif defined(ARDUINO_ARCH__STM32F1) || defined(ARDUINO_ARCH__STM32F4)  || defined(ARDUINO_ARCH_STM32)
 #define DIMMER_TIMER 3
 #else
 #define DIMMER_TIMER 2
