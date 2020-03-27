@@ -32,6 +32,7 @@ The following examples_ are provided:
 Updated by hamidsaffari@yahoo.com @ 2020:
  
 Supported Arduino_STM32 as well. https://github.com/rogerclarkmelbourne/Arduino_STM32
+Supported Arduino_Core_STM32 too. https://github.com/stm32duino/Arduino_Core_STM32
 
 Added Auto_Main_frequency_detection option and getAcFrequency() to give you the AC main frequency.
 
