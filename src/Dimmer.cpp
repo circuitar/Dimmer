@@ -2,7 +2,6 @@
  * This is a library to control the intensity of dimmable AC lamps or other AC loads using triacs.
  *
  * Copyright (c) 2015 Circuitar
- * Updated by hamidsaffari@yahoo.com @ 2020
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 
@@ -25,6 +24,8 @@
 #define TIMER_COMPA_VECTOR(X) _TIMER_COMPA_VECTOR(X)
 #define _Timer(X) Timer ## X
 #define Timer(X) _Timer(X)
+#define _TIM(X) TIM ## X
+#define TIM(X) _TIM(X)
 #define _NVIC_TIMER(X) NVIC_TIMER ## X
 #define NVIC_TIMER(X) _NVIC_TIMER(X)
 
@@ -71,11 +72,15 @@ static uint8_t dimmerCount = 0;                // Number of registered dimmer ob
 #if defined(ARDUINO_ARCH_AVR) 
   static volatile uint8_t* triacPinPorts[DIMMER_MAX_TRIAC]; // Triac ports for registered dimmers
   static uint8_t triacPinMasks[DIMMER_MAX_TRIAC];           // Triac pin mask for registered dimmers
-#elif defined(ARDUINO_ARCH_STM32F1)
+#elif defined(ARDUINO_ARCH_STM32F1) || defined(ARDUINO_ARCH_STM32F4) || defined(ARDUINO_ARCH_STM32) 
   static volatile uint32_t* triacPinPorts[DIMMER_MAX_TRIAC]; // Triac ports for registered dimmers
   static uint32_t triacPinMasks[DIMMER_MAX_TRIAC];           // Triac pin mask for registered dimmers
 #endif
 
+#if defined(ARDUINO_ARCH_STM32) 
+  HardwareTimer *MyTim;
+#endif  
+	
 static uint8_t triacTimes[DIMMER_MAX_TRIAC];              // Triac time for registered dimmers
 
 // Timer ticks since zero crossing
@@ -122,10 +127,11 @@ void callZeroCross() {
   #if defined(ARDUINO_ARCH_AVR) 
    TCNT(DIMMER_TIMER) = 0;
    //sei();
-  #elif defined(ARDUINO_ARCH_STM32F1)
+  #elif defined(ARDUINO_ARCH__STM32F1) || defined(ARDUINO_ARCH__STM32F4) 
    //Timer(DIMMER_TIMER).setCount(0); //The new count value to set. If this value exceeds the timer’s overflow value, it is truncated to the overflow value.
    Timer(DIMMER_TIMER).refresh(); //This will reset the counter to 0 in upcounting mode (the default). It will also update the timer’s prescaler and overflow, if you have set them up to be changed using HardwareTimer::setPrescaleFactor() or HardwareTimer::setOverflow().
-   
+  #elif defined(ARDUINO_ARCH_STM32)
+   MyTim->setCount(0);
   #endif
   
   interrupts();
@@ -149,10 +155,15 @@ void callZeroCross() {
 }
 
 // Timer interrupt
-#if defined(ARDUINO_ARCH_STM32F1)	
+#if defined(ARDUINO_ARCH_STM32F1) || defined(ARDUINO_ARCH_STM32F4) 
   void onTimerISR()
+  
+#elif defined(ARDUINO_ARCH_STM32)
+  void onTimerISR(HardwareTimer*)
+
 #elif defined(ARDUINO_ARCH_AVR)
   ISR(TIMER_COMPA_VECTOR(DIMMER_TIMER))
+  
 #endif	  
   {	
     // Increment ticks
@@ -237,7 +248,7 @@ void Dimmer::begin(uint8_t value, bool on ) {
 	
     // Setup timer to fire every 50us @ 60Hz
 	
-  #if defined(ARDUINO_ARCH_STM32F1)
+  #if defined(ARDUINO_ARCH_STM32F1) || defined(ARDUINO_ARCH__STM32F4) 
   
     Timer(DIMMER_TIMER).setMode(TIMER_CH1, TIMER_OUTPUTCOMPARE);
     Timer(DIMMER_TIMER).setPeriod(50*(60.0/acFreq)); // in microseconds
@@ -245,12 +256,22 @@ void Dimmer::begin(uint8_t value, bool on ) {
     Timer(DIMMER_TIMER).attachInterrupt(TIMER_CH1, onTimerISR);
 	//nvic_irq_set_priority(NVIC_TIMER(DIMMER_TIMER), 15);// interrupt must not be preempted. highest interrupt priority is 0. All other interrupts have been initialized to priority level 16. See nvic_init().
 	
+  #elif defined(ARDUINO_ARCH_STM32)
+	
+	// Instantiate HardwareTimer object. Thanks to 'new' instanciation, HardwareTimer is not destructed when setup() function is finished.
+	HardwareTimer *MyTim = new HardwareTimer(TIM(DIMMER_TIMER));
+	MyTim->setOverflow(50*(60.0/acFreq), MICROSEC_FORMAT);
+	MyTim->attachInterrupt(onTimerISR);
+	MyTim->resume();
+
   #elif defined(ARDUINO_ARCH_AVR)
+  
 	TCNT(DIMMER_TIMER) = 0;                      // Clear timer
     TCCRxA(DIMMER_TIMER) = TCCRxA_VALUE;         // Timer config byte A
     TCCRxB(DIMMER_TIMER) = TCCRxB_VALUE;         // Timer config byte B
     TIMSKx(DIMMER_TIMER) = 0x02;                 // Timer Compare Match Interrupt Enable
     OCRxA(DIMMER_TIMER) = 100 * 60.0 / acFreq - 1; // Compare value (frequency adjusted)  
+	
   #endif
     started = true;
   }
