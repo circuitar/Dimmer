@@ -6,7 +6,7 @@
  */
 
 #include "Arduino.h"
-#include "Dimmer_2.h"
+#include "Dimmer.h"
 ////#include <util/atomic.h>
 
 // Timer configuration macros_TIMER(X)
