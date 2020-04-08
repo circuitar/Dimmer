@@ -5,8 +5,8 @@
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 
-#ifndef DIMMER_2_H
-#define DIMMER_2_H
+#ifndef DIMMER_H
+#define DIMMER_H
 
 /**
  * Maximum number of triacs that can be used. Can be decreased to save RAM.
