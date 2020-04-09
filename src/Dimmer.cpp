@@ -78,9 +78,10 @@ static uint8_t dimmerCount = 0;                // Number of registered dimmer ob
 #endif
 
 #if defined(ARDUINO_ARCH_STM32) 
-  HardwareTimer *MyTim;
+  HardwareTimer MyTim = HardwareTimer(TIM(DIMMER_TIMER));
+
 #endif  
-	
+
 static uint8_t triacTimes[DIMMER_MAX_TRIAC];              // Triac time for registered dimmers
 
 // Timer ticks since zero crossing
@@ -90,36 +91,33 @@ static uint8_t tmrCount = 0;
 bool Dimmer::started = false; // At least one dimmer has started
 
 //================== added by Hamid ==================
-#ifdef Auto_Main_frequency_detection
 
-  bool Main_frequency_detection_Mode=true;
-  volatile uint8_t sample_for_Main_frequency_detection;
-  unsigned long lastTime_for_Main_frequency_detection;
-  volatile unsigned long frequency_detection_timings_sum;
+bool Auto_Main_frequency_detection=false;
+volatile uint8_t sample_for_Main_frequency_detection;
+unsigned long lastTime_for_Main_frequency_detection;
+volatile unsigned long frequency_detection_timings_sum;
 
-#endif
 //====================================================
 	
 // Zero cross interrupt
 void callZeroCross() {
 	
   //================== added by Hamid ===================
-  #ifdef Auto_Main_frequency_detection
-	if(Main_frequency_detection_Mode){
-		if(sample_for_Main_frequency_detection <= NUMBER_OF_SAMLPLES_FOR_MAIN_FREQUENCY_DETECTION){
-			
-			const long time = micros();
-			const unsigned long duration = time - lastTime_for_Main_frequency_detection;
+  if(Auto_Main_frequency_detection){
+
+	if(sample_for_Main_frequency_detection <= NUMBER_OF_SAMLPLES_FOR_MAIN_FREQUENCY_DETECTION){
 		
-			if (duration <= (1000.0/MIN_INPUT_FREQUENCY)*1000.0/2.0 && duration >= (1000.0/MAX_INPUT_FREQUENCY)*1000.0/2.0){ 
-				if(sample_for_Main_frequency_detection!=0) frequency_detection_timings_sum += duration; // dump first one
-				sample_for_Main_frequency_detection++;
-			}
-			lastTime_for_Main_frequency_detection = time;
+		const long time = micros();
+		const unsigned long duration = time - lastTime_for_Main_frequency_detection;
+	
+		if (duration <= (1000.0/MIN_INPUT_FREQUENCY)*1000.0/2.0 && duration >= (1000.0/MAX_INPUT_FREQUENCY)*1000.0/2.0){ 
+			if(sample_for_Main_frequency_detection!=0) frequency_detection_timings_sum += duration; // dump first one
+			sample_for_Main_frequency_detection++;
 		}
-		return;
+		lastTime_for_Main_frequency_detection = time;
 	}
-  #endif
+	return;
+  }
   //====================================================
 	
 
@@ -131,7 +129,7 @@ void callZeroCross() {
    //Timer(DIMMER_TIMER).setCount(0); //The new count value to set. If this value exceeds the timer’s overflow value, it is truncated to the overflow value.
    Timer(DIMMER_TIMER).refresh(); //This will reset the counter to 0 in upcounting mode (the default). It will also update the timer’s prescaler and overflow, if you have set them up to be changed using HardwareTimer::setPrescaleFactor() or HardwareTimer::setOverflow().
   #elif defined(ARDUINO_ARCH_STM32)
-   MyTim->setCount(0);
+   MyTim.setCount(0);
   #endif
   
   interrupts();
@@ -193,7 +191,9 @@ Dimmer::Dimmer(uint8_t out_dimmer_pin, uint8_t zc_dimmer_pin, uint8_t mode, doub
         pulsesLow(0),
         pulseCount(0),
         pulsesUsed(0),
-        acFreq(freq) {
+		_rampTime(rampTime),
+        acFreq(freq)	{
+			
   if (dimmerCount < DIMMER_MAX_TRIAC) {
     // Register dimmer object being created
     dimmerIndex = dimmerCount;
@@ -202,7 +202,7 @@ Dimmer::Dimmer(uint8_t out_dimmer_pin, uint8_t zc_dimmer_pin, uint8_t mode, doub
     triacPinMasks[dimmerIndex] = digitalPinToBitMask(out_dimmer_pin);
   }
 
-  if (mode == DIMMER_RAMP) {
+  if (mode == DIMMER_RAMP && freq!=false) {
     setRampTime(rampTime);
   }
 }
@@ -214,19 +214,22 @@ void Dimmer::begin(uint8_t value, bool on ) {
   // Initialize triac pin
   pinMode(triacPin, OUTPUT);
   digitalWrite(triacPin, LOW);
-
+  
   if (!started) {
+	  
+	if (acFreq == false) Auto_Main_frequency_detection = true;
+	
     // Start zero cross circuit if not started yet
     pinMode(zc_pin, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(zc_pin), callZeroCross, RISING);
 
   //================== added by Hamid =================
-  #ifdef Auto_Main_frequency_detection
+  if(Auto_Main_frequency_detection){
 	
 	while(sample_for_Main_frequency_detection <= NUMBER_OF_SAMLPLES_FOR_MAIN_FREQUENCY_DETECTION){
 		// Zerocross-Interrupt doing his job
 	}
-	
+
 	//ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { //Creates a block of code that is guaranteed to be executed atomically. Upon entering the block the Global Interrupt Status flag in SREG is disabled, and re-enabled upon exiting the block from any exit path.
 	noInterrupts();	// go atomic level - avoid interrupts to surely get the previously received data
 	
@@ -237,15 +240,17 @@ void Dimmer::begin(uint8_t value, bool on ) {
 	float Main_frequency;
 	Main_frequency = (1/((frequency_detection_timings_sum/NUMBER_OF_SAMLPLES_FOR_MAIN_FREQUENCY_DETECTION)/1000000.0))/2.0 ;// ( /2) because zerocross occur in half cycle
 	acFreq = round(Main_frequency);
-	Main_frequency_detection_Mode= false;// must be after all to execute "return" in ISR
+	Auto_Main_frequency_detection= false;// must be after all to execute "return" in ISR
+    
+	if (operatingMode == DIMMER_RAMP ) {
+		setRampTime(_rampTime);
+	}
 	
-	interrupts();							// let systick do its job
-		
+	interrupts();							// let interrupt do its job
 	//}
-	
-  #endif
-  //==================================================
-	
+  }
+  
+  //======================================================
     // Setup timer to fire every 50us @ 60Hz
 	
   #if defined(ARDUINO_ARCH_STM32F1) || defined(ARDUINO_ARCH__STM32F4) 
@@ -258,11 +263,10 @@ void Dimmer::begin(uint8_t value, bool on ) {
 	
   #elif defined(ARDUINO_ARCH_STM32)
 	
-	// Instantiate HardwareTimer object. Thanks to 'new' instanciation, HardwareTimer is not destructed when setup() function is finished.
-	HardwareTimer *MyTim = new HardwareTimer(TIM(DIMMER_TIMER));
-	MyTim->setOverflow(50*(60.0/acFreq), MICROSEC_FORMAT);
-	MyTim->attachInterrupt(onTimerISR);
-	MyTim->resume();
+	MyTim.setMode(2, TIMER_OUTPUT_COMPARE);
+	MyTim.setOverflow(50*(60.0/acFreq), MICROSEC_FORMAT);
+	MyTim.attachInterrupt(onTimerISR);
+	MyTim.resume();
 
   #elif defined(ARDUINO_ARCH_AVR)
   
