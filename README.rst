@@ -39,5 +39,5 @@ Added Auto_Main_frequency_detection option and getAcFrequency() to give you the 
 
 Copyright (c) 2015 Circuitar  
 All rights reserved.
-
+Updated @ 2020 by HamidSaffari@yahoo.com  
 This software is released under an MIT license. See the attached LICENSE file for details.
