@@ -44,18 +44,13 @@
 #define DIMMER_RAMP   1
 #define DIMMER_COUNT  2
 
-//================== added by Hamid ================
+//===== added by Hamid for Auto_Main_frequency_detection ================
 
-#define Auto_Main_frequency_detection
-
-#ifdef Auto_Main_frequency_detection
-  #define NUMBER_OF_SAMLPLES_FOR_MAIN_FREQUENCY_DETECTION  25
-#endif
-
+#define NUMBER_OF_SAMLPLES_FOR_MAIN_FREQUENCY_DETECTION  25
 #define MAX_INPUT_FREQUENCY 80 // Hz 
 #define MIN_INPUT_FREQUENCY 30 // Hz
 
-//==================================================
+//================================================================
 
 /**
  * A dimmer channel.
@@ -80,7 +75,7 @@ class Dimmer {
      *
      * @see begin()
      */
-    Dimmer(uint8_t pin, uint8_t zc_dimmer_pin, uint8_t mode = DIMMER_NORMAL, double rampTime = 1.5, uint8_t freq = 60);
+    Dimmer(uint8_t pin, uint8_t zc_dimmer_pin, uint8_t mode = DIMMER_NORMAL, double rampTime = 1.5, uint8_t freq = 60); //if freq=false then Auto_Main_frequency_detection
 
     /**
      * Initializes the module.
@@ -171,7 +166,7 @@ class Dimmer {
     uint8_t pulsesUsed;
     uint64_t pulsesHigh;
     uint64_t pulsesLow;
-	
+	double _rampTime;
 
     void zeroCross();
 
