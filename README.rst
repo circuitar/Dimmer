@@ -19,9 +19,9 @@ The following examples_ are provided:
 * WaveLamps_ Control 3 dimmable lamps in a wave form (can be extended to 10 lamps).
 * CountMode_ Control high, low response AC loads without introducing noise using count mode.
 
-.. _`Triac Nanoshield`: https://www.circuitar.com/nanoshields/modules/triac/
-.. _`Zero Cross Nanoshield`: https://www.circuitar.com/nanoshields/modules/zero-cross/
-.. _Circuitar: https://www.circuitar.com/
+.. _`Triac Nanoshield`: https://www.circuitar.com.br/nanoshields/modulos/triac/
+.. _`Zero Cross Nanoshield`: https://www.circuitar.com.br/nanoshields/modulos/zero-cross/
+.. _Circuitar: https://www.circuitar.com.br/
 .. _examples: https://github.com/circuitar/Dimmer/tree/master/examples/
 .. _Fade: https://github.com/circuitar/Dimmer/blob/master/examples/Fade/Fade.ino
 .. _FadeMinimum: https://github.com/circuitar/Dimmer/blob/master/examples/FadeMinimum/FadeMinimum.ino
