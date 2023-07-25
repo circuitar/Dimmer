@@ -29,9 +29,15 @@ The following examples_ are provided:
 .. _WaveLamps: https://github.com/circuitar/Dimmer/blob/master/examples/WaveLamps/WaveLamps.ino
 .. _CountMode: https://github.com/circuitar/Dimmer/blob/master/examples/CountMode/CountMode.ino
 
-----
+Updated by hamidsaffari@yahoo.com @ 2020:
+ 
+Supported Arduino_STM32 as well. https://github.com/rogerclarkmelbourne/Arduino_STM32
+
+Supported Arduino_Core_STM32 too. https://github.com/stm32duino/Arduino_Core_STM32
+
+Added Auto_Main_frequency_detection option and getAcFrequency() to give you the AC main frequency.
 
 Copyright (c) 2015 Circuitar  
 All rights reserved.
-
+Updated @ 2020 by HamidSaffari@yahoo.com  
 This software is released under an MIT license. See the attached LICENSE file for details.
