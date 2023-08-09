@@ -1,13 +1,11 @@
 Dimmer Library for Arduino
 ==============
 
-This is an Arduino software library to control AC loads using triacs and a zero cross detector circuit. The library methods can be used to control the AC load power for multiple triacs independently, using a single shared zero-cross circuit.
+This is an Arduino software library to control AC loads using triacs and a zero and non zero cross detector circuit. The library methods can be used to control the AC load power for multiple triacs independently, using a single shared zero-cross circuit.
 
 * Source code: https://github.com/circuitar/Dimmer
 * Documentation: http://dimmer.readthedocs.org/
 * Reference Board: `Triac Nanoshield`_  and `Zero Cross Nanoshield`_ from Circuitar_
-
-There are different ways to implement zero cross detector circuits. This library is based on the implementation above, but it can be easily adapted to use any type of zero cross detector circuit.
 
 To install, just click **Download ZIP** and install it using **Sketch > Include Library... > Add .ZIP Library** in the Arduino IDE.
 
